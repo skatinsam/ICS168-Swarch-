@@ -62,7 +62,7 @@ public class GameProcess : MonoBehaviour {
 	{
 		//lock(socks.recvBuffer)
 		//{
-		
+	/*	
 		if(true)//socks.recvBuffer.Count > 0)
 		{
 			
@@ -89,6 +89,7 @@ public class GameProcess : MonoBehaviour {
 
 			
 		}
+	  */	
 	}
 	//public Sockets returnSocket()
 	//{
