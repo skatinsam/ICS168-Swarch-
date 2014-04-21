@@ -11,7 +11,7 @@ public class GameProcess : MonoBehaviour {
 	
 	//PUBLIC MEMBERS
 	public int clientNumber;
-	
+
 	public bool startGame;
 	public bool startNextRound;
 	public bool hitGoal;
@@ -25,7 +25,10 @@ public class GameProcess : MonoBehaviour {
 	private string data;
 	public string[] splitData;
 	private char delemeter;
-	
+
+	public Transform pell;
+	public ArrayList pellets;
+
 	public int numOfPlayer;
 	public DateTime t1; 
 	public DateTime t4;
@@ -35,9 +38,24 @@ public class GameProcess : MonoBehaviour {
 	
 	void Start () 
 	{
-		
-		//socks = new Sockets();
-		
+		//pellets = new Transform[6];
+
+		pellets = new ArrayList();
+
+		for(int i =0; i < 5; ++i)
+		{
+			//pell;
+			Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
+			                              0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
+
+			//temp.name = (i.ToString());
+			//print (temp.name);
+
+			pellets.Add(tempPell ); 
+
+
+		}
+
 		startGame = false;
 		startNextRound = false;
 		hitGoal = false;
@@ -53,13 +71,18 @@ public class GameProcess : MonoBehaviour {
 		tServer = new DateTime();
 		canSendStart = false;
 		totalLat = 0;
-		//t1 = DateTime.UtcNow;  // ******* WHERE TO PUT THIS , timestamp
+		//t1 = DateTime.UtcNow; 
 		
 		
 	}
 	
 	void Update () 
 	{
+
+
+
+
+
 		//lock(socks.recvBuffer)
 		//{
 	/*	
