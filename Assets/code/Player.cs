@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 
@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
 	//public int playerNum;
 	
 	public int growSize = 2;
+	public int score = 10;
 	
 	// whether this paddle can accept player input
 	public bool AcceptsInput = true;
@@ -252,6 +253,13 @@ public class Ball : MonoBehaviour
 		
 		resetting = false;
 	}
+
+	void increasePointValue(int points)
+	{
+		score += points;
+		//if collide with player take it’s point value and add it to itself
+	}
+	
 }
 
 */
