@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
 	//public int playerNum;
 	
 	public int growSize = 2;
-	public int score = 10;
+	public int score = 0;
 	
 	// whether this paddle can accept player input
 	public bool AcceptsInput = true;
@@ -23,13 +23,15 @@ public class Player : MonoBehaviour
 
 	public bool resetting = false;
 
+	public TextMesh scoreDisplay;
+
 
 	void Start()
 	{
 
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>(); 
 
-
+		scoreDisplay.transform.position = this.transform.position;
 		//p = GameObject.Find("Player");
 
 		MoveSpeed = 10f;
@@ -38,56 +40,25 @@ public class Player : MonoBehaviour
 	
 	void Update()
 	{
+		scoreDisplay.text = score.ToString();
+
 
 		if( resetting )
 			return;
 		
-		// move the ball in the current direction
-		//Vector2 moveDir = currentDir * currentSpeed * Time.deltaTime;
-		//transform.Translate( new Vector3( moveDir.x, 0f, moveDir.y ) );
 
-
-	  ///*	
-		// does not accept input, abort
 		if( !AcceptsInput )
 			return;
 		
 
-			
-			//if(Input.GetKey(KeyCode.UpArrow)||Input.GetKey(KeyCode.DownArrow) )
-			//{
 			input = Input.GetAxis( "Vertical" );
 		    input2 = Input.GetAxis("Horizontal");	
-		//}
-			//if(Input.GetKeyUp(KeyCode.UpArrow)||Input.GetKeyUp(KeyCode.DownArrow))
-			//{
-			//	lastInput = input;
-			//}
-			
-			
-			//lastPos = p.transform.position;
-			
-
-			// move paddle
-			//Vector3 pos = p.transform.position;
 			pos.z += input * MoveSpeed * Time.deltaTime;
 		    pos.x += input2 *MoveSpeed * Time.deltaTime;	
-	    // p 
-
+	    
 
 		this.transform.position = pos;
-
-		//if(this.transform.position.x >= 5 && !movedBack)
-		//{
-
-			//this.transform.position = new Vector3(0,0,0);
-			//movedBack = true;
-		//}
-
-		//print(p.transform.position);
-
-    //*/
-		
+		scoreDisplay.transform.position = pos;
 	}
 
 	void OnTriggerEnter( Collider c )
@@ -103,7 +74,7 @@ public class Player : MonoBehaviour
 			pos =  Vector3.zero;
 
 			this.transform.localScale = new Vector3(2,2,2);
-
+			score = 0;
 
 		}
 		if(c.tag == "Pellet")
@@ -119,6 +90,8 @@ public class Player : MonoBehaviour
 			gp.pellets.Add(tempPell); 
 
 			 int growSide = UnityEngine.Random.Range(1,10);
+
+			score += growSize;
 
 		    if(growSide <= 5)
 			{
@@ -167,100 +140,4 @@ public class Player : MonoBehaviour
 
  }
 
-
-/*
-
-public class Ball : MonoBehaviour
-{
-	// the speed the ball starts with
-	public float StartSpeed = 5f;
-	
-	// the maximum speed of the ball
-	public float MaxSpeed = 20f;
-	
-	// how much faster the ball gets with each bounce
-	public float SpeedIncrease = 0.25f;
-	
-	// the current speed of the ball
-	private float currentSpeed;
-	
-	// the current direction of travel
-	private Vector2 currentDir
-		
-		// whether or not the ball is resetting
-		private bool resetting = false;
-	
-	void Start()
-	{
-		// initialize starting speed
-		currentSpeed = StartSpeed;
-		
-		// initialize direction
-		currentDir = Random.insideUnitCircle.normalized;
-	}
-	
-	void Update()
-	{
-		// don’t move the ball if it’s resetting
-		if( resetting )
-			return;
-		
-		// move the ball in the current direction
-		Vector2 moveDir = currentDir * currentSpeed * Time.deltaTime;
-		transform.Translate( new Vector3( moveDir.x, 0f, moveDir.y ) );
-	}
-	
-	void OnTriggerEnter( Collider other )
-	{
-		if( other.tag == "Boundary" )
-		{
-			// vertical boundary, reverse Y direction
-			currentDir.y *= -1;
-		}
-		else if( other.tag == "Player" )
-		{
-			// player paddle, reverse X direction
-			currentDir.x *= -1;
-		}
-		else if( other.tag == "Goal" )
-		{
-			// reset the ball
-			StartCoroutine( resetBall() );
-			// inform goal of the score
-			other.SendMessage( "GetPoint", SendMessageOptions.DontRequireReceiver );
-		}
-		
-		// increase speed
-		currentSpeed += SpeedIncrease;
-		
-		// clamp speed to maximum
-		currentSpeed = Mathf.Clamp( currentSpeed, StartSpeed, MaxSpeed );
-	}
-	
-	IEnumerator resetBall()
-	{
-		// reset position, speed, and direction
-		resetting = true;
-		transform.position = Vector3.zero;
-		
-		currentDir = Vector3.zero;
-		currentSpeed = 0f;
-		
-		// wait for 3 seconds before starting the round
-		yield return new WaitForSeconds( 3f );
-		
-		Start();
-		
-		resetting = false;
-	}
-
-	void increasePointValue(int points)
-	{
-		score += points;
-		//if collide with player take it’s point value and add it to itself
-	}
-	
-}
-
-*/
 
