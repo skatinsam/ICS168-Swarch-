@@ -8,9 +8,23 @@ public class LoginScript : MonoBehaviour
 
     bool loginEntered = false;
 
+	private GameProcess gameProcess;
+	private bool connectSuccess;
+	private string data;
+	private string[] splitData;
+	public GUIText guiT;
+	public bool faledConnection;
+
+	//public GameProcess gp;
     void Awake()
     {
-        DontDestroyOnLoad(transform.gameObject);
+		DontDestroyOnLoad(transform.gameObject);
+		splitData = new string[]{"",""};
+		connectSuccess = false;
+		faledConnection = false;
+		gameProcess = GameObject.Find("GameProcess").GetComponent<GameProcess>();
+		DontDestroyOnLoad(gameProcess);
+		DontDestroyOnLoad(guiT);
     }
 
     void OnGUI()
@@ -24,22 +38,74 @@ public class LoginScript : MonoBehaviour
             {
                 if (username == "Enter username" || password == "Enter password")
                 {
+					guiT.text = "Incorrect Username or Password ";
                     Debug.Log("Please try again");
                 }
                 else
                 {
-                    Debug.Log("Login successful");
-                    loginEntered = true;
-                    Application.LoadLevel("swarch(Whale)");
-                }
-            }
-        }
-    }
 
-    /*
+
+
+                     Debug.Log("Login successful");
+                     loginEntered = true;
+                     
+					
+				}
+
+				if(loginEntered && !connectSuccess )
+				{
+					print("Connecting...");
+					if ( gameProcess.socks.Connect() )
+					{	
+						guiT.text = "";
+
+						print("Connect Succeeded");
+						connectSuccess = true;
+					}
+					else
+					{
+						guiT.text = "Connect Failed, try again ";
+						print ("\nCONNECTION HAS FAILED, TRY AGAIN ");
+						//faledConnection =true;
+						loginEntered = false;
+						//guiT.text = "";
+						// ***** have a button here incase need to try to connect to server again 
+					}
+				
+			   	}
+				   
+
+			}
+
+		}
+
+	}
+	//}
+	
     void Update()
     {
-       
+	  
+	 
+		if(gameProcess.socks.recvBuffer.Count > 0)
+		{
+			
+			data = (string)gameProcess.socks.recvBuffer.Dequeue();
+			
+			splitData = data.Split(gameProcess.delemeter);
+			
+			if(splitData[0] == "correctUserPass")
+			{
+				Application.LoadLevel("swarch(Whale)");
+			}
+            
+			if(splitData[0] == "incorrectUserPass")
+			{
+				loginEntered = false;
+				OnGUI();
+
+			}
+		}
+/*
         if(Input.GetKeyDown(KeyCode.Return))
         {
             Debug.Log("Something");
@@ -54,10 +120,8 @@ public class LoginScript : MonoBehaviour
                 Application.LoadLevel("swarch(Whale)");
             }
         }
-
+*/
     }
-     */
 
-    
 
 }
