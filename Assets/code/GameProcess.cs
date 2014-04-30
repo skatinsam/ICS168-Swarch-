@@ -17,14 +17,13 @@ public class GameProcess : MonoBehaviour {
 	public bool hitGoal;
 	public int winningMove ;
 	
-	//public Sockets socks;
+	public Sockets socks;
 	
 	private byte byteBuffer;
 	private byte tempBuffer;
-	private GuiSwarch guiSwarch;
 	private string data;
 	public string[] splitData;
-	private char delemeter;
+	public char delemeter;
 
 	public Transform pell;
 	public ArrayList pellets;
@@ -35,33 +34,22 @@ public class GameProcess : MonoBehaviour {
 	public DateTime tServer;
 	public bool canSendStart;
 	public double totalLat;
-	
+
+	public bool loadPellets;
+
 	void Start () 
 	{
-		//pellets = new Transform[6];
+		socks = new Sockets();
 
 		pellets = new ArrayList();
+		data = "";
+		loadPellets = false;
 
-		for(int i =0; i < 5; ++i)
-		{
-			//pell;
-			Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
-			                              0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
-
-			//temp.name = (i.ToString());
-			//print (temp.name);
-
-			pellets.Add(tempPell ); 
-
-
-		}
 
 		startGame = false;
 		startNextRound = false;
 		hitGoal = false;
 		splitData = new string[]{"",""};
-		
-		guiSwarch = GameObject.Find("GuiSwarch").GetComponent<GuiSwarch>();
 
 		delemeter = ('\\');
 		
@@ -78,15 +66,27 @@ public class GameProcess : MonoBehaviour {
 	
 	void Update () 
 	{
-
-
-
-
+	  if(loadPellets)
+	  {
+		for(int i =0; i < 5; ++i)
+		{
+			//pell;
+			Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
+			                                                   0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
+			
+			//temp.name = (i.ToString());
+			//print (temp.name);
+			
+			pellets.Add(tempPell ); 
+			
+			
+		}
+	  }
 
 		//lock(socks.recvBuffer)
 		//{
-	/*	
-		if(true)//socks.recvBuffer.Count > 0)
+	///*	
+		if(socks.recvBuffer.Count > 0)
 		{
 			
 			//data = (string)socks.recvBuffer.Dequeue();
@@ -112,7 +112,7 @@ public class GameProcess : MonoBehaviour {
 
 			
 		}
-	  */	
+	 // */	
 	}
 	//public Sockets returnSocket()
 	//{
@@ -136,11 +136,7 @@ public class GameProcess : MonoBehaviour {
 	}
 	
 
-	
-	public void printGui( string printStr )
-	{
-		this.guiSwarch.printGui(printStr );
-	}
+
 	
 	
 	
