@@ -9,6 +9,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.IO;
 using System.Diagnostics;
+using System.Data.SQLite;
 
 
 public class AlternateServer
