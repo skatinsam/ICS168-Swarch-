@@ -16,7 +16,7 @@ namespace SwarchServer
         static void Main(string[] args)
         {
             Server s = new Server();
-        
+            //AlternateServer a = new AlternateServer();
         }
     }
 }
