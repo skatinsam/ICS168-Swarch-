@@ -16,7 +16,6 @@ namespace SwarchServer
 {
     class Server
     {
-    
         //private TcpListener tcpListener;
         //private Thread listenThread;
         protected static Stopwatch physTimer = new Stopwatch();
@@ -75,10 +74,6 @@ namespace SwarchServer
         }
 
         //protected static List<gameData> clientData = new List<gameData>(); // array of sturct for each client info
-
-
-
-
 
         public Server()
         {
