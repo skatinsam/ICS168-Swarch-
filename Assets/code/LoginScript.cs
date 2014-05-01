@@ -61,6 +61,12 @@ public class LoginScript : MonoBehaviour
 
 						print("Connect Succeeded");
 						connectSuccess = true;
+
+						gameProcess.socks.sendQueue.Enqueue("userAndPass\\"
+						                                    + username +"\\"
+						                                    + password );
+
+
 					}
 					else
 					{

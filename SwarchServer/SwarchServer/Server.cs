@@ -60,7 +60,7 @@ namespace SwarchServer
         protected static int sleepTime;
 
 
-        //ArrayList clientEntered = new ArrayList();
+        protected static ArrayList clientsEntered = new ArrayList();
 
         protected struct gameData
         {
@@ -92,8 +92,8 @@ private class Socket//private void ListenForClients()
     int clientsConnected;
     //TcpClient[] clientsArray;
     Thread clientThread;
-    Thread clientThread2;
-    Thread BallThread; //??????
+    //Thread clientThread2;
+    Thread BallThread; 
     bool gameStarted;
 
     public StreamWriter sw1;
@@ -162,55 +162,63 @@ private class Socket//private void ListenForClients()
 
            // if (clientsConnected == 2 && !gameStarted)
             //{
-                Console.WriteLine("\n Let The Game Begin! ");
+              //  Console.WriteLine("\n Let The Game Begin! ");
 
 
 
                 NetworkStream nws1 = clientsArray[0].GetStream(); //client.GetStream();
-                NetworkStream nws2 = clientsArray[1].GetStream();
+               // NetworkStream nws2 = clientsArray[1].GetStream();
 
-                sw1 = new StreamWriter(nws1);
+                //sw1 = new StreamWriter(nws1);
                 sw1.AutoFlush = true;
 
-                sw2 = new StreamWriter(nws2);
-                sw2.AutoFlush = true;
+                //sw2 = new StreamWriter(nws2);
+                //sw2.AutoFlush = true;
 
 
-                sw1.WriteLine("canSendStart");
-                sw2.WriteLine("canSendStart");
+                //sw1.WriteLine("canSendStart");
+                //sw2.WriteLine("canSendStart");
 
                 
 
 
                 ThreadSock tSock1 = new ThreadSock(nws1, this);
 
-                ThreadSock tSock2 = new ThreadSock(nws2, this);
+                //ThreadSock tSock2 = new ThreadSock(nws2, this);
 
 
-                clientThread = new Thread(
-                    new ParameterizedThreadStart(tSock1.HandleClientComm)); //(HandleClientComm));
+                //clientThread = new Thread(
+                //    new ParameterizedThreadStart(tSock1.HandleClientComm)); //(HandleClientComm));
 
-                clientThread2 = new Thread(
-                        new ParameterizedThreadStart(tSock2.HandleClientComm));
+                //clientThread2 = new Thread(
+                //        new ParameterizedThreadStart(tSock2.HandleClientComm));
 
 
-                clientThread.Start(clientsArray[0]);
-                clientThread2.Start(clientsArray[1]);
+                //clientThread.Start(clientsArray[0]);
+                //clientThread2.Start(clientsArray[1]);
 
-              
+
+
+
+               clientsEntered.Add(new Thread(
+                        new ParameterizedThreadStart(tSock1.HandleClientComm)));
+
+
+              // clientsEntered[clientsEntered.Count - 1];
+            
+            //===========================================================
                 //BallControl ballc = new BallControl(nws1, nws2);
 
                // BallThread = new Thread(
                //         new ThreadStart(ballc.ballLoop));
 
                // BallThread.Start();
+           //===========================================================
 
 
                  // *** THIS WILL BE A SEPEATE THREAD
                 processGame();
-
-
-              //  gameStarted = true;
+                //gameStarted = true;
             //}
 
 
