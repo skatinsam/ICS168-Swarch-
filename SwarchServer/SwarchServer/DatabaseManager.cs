@@ -10,15 +10,15 @@ namespace SwarchServer
 {
     class DatabaseManager
     {
-        private String database;
+        private string database;
 
         //Initalize Database
-        public void DatabaseManager()
+        public DatabaseManager()
         {
             //Insert name of database here
-            database = "Data Source=UserDatabase.db”;
+            database = "Data Source=UserDatabase.db";
         }
-
+        
         //BASIC DATABASE FUNCTIONS THAT ARE NEEDED
 
         //Run a query on the database
