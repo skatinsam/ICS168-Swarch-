@@ -22,6 +22,7 @@ public class Player : MonoBehaviour
 	public Vector3 pos;
 
 	public bool resetting = false;
+    public float move = 1.0f;
 
 	public TextMesh scoreDisplay;
 
@@ -51,11 +52,12 @@ public class Player : MonoBehaviour
 			return;
 		
 
-			input = Input.GetAxis( "Vertical" );
-		    input2 = Input.GetAxis("Horizontal");	
-			pos.z += input * MoveSpeed * Time.deltaTime;
-		    pos.x += input2 *MoveSpeed * Time.deltaTime;	
+		input = Input.GetAxis( "Vertical" );
+		input2 = Input.GetAxis("Horizontal");	
+	    pos.z += input * MoveSpeed * Time.deltaTime;
+		pos.x += input2 *MoveSpeed * Time.deltaTime;	
 	    
+        
 
 		this.transform.position = pos;
 		scoreDisplay.transform.position = pos;
