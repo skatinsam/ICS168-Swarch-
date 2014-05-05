@@ -17,7 +17,7 @@ public class GameProcess : MonoBehaviour {
 	public bool hitGoal;
 	public int winningMove ;
 	
-	public Sockets socks;
+	private Sockets socks;
 	
 	private byte byteBuffer;
 	private byte tempBuffer;
@@ -63,9 +63,28 @@ public class GameProcess : MonoBehaviour {
 		
 		
 	}
-	
+
+	void OnGUI()
+	{
+		if ( GUI.Button( new Rect( 0, 0, 100, 20), "Disconnect"))
+		{
+			//********* COMPLETE THE FOLLOWING CODE
+			//********* KILL THREAD AND SEVER CONNECTION
+			
+			//returnSocket().SendTCPPacket ((byte) (process.commands[(int)GameProcess.codes.roll]));
+			
+			//process.sendEndGame();
+			
+			socks.endThread();
+			socks.Disconnect();
+			print("\nDISCONNECTED ");
+		}
+
+	}
+
 	void Update () 
 	{
+
 	  if(loadPellets)
 	  {
 		for(int i =0; i < 5; ++i)
@@ -79,9 +98,14 @@ public class GameProcess : MonoBehaviour {
 			
 			pellets.Add(tempPell ); 
 			
+				loadPellets = false;
 			
 		}
+	        
+			//FindObjectOfType(typeof (YourObject) )
 	  }
+		
+
 
 		//lock(socks.recvBuffer)
 		//{
@@ -114,10 +138,10 @@ public class GameProcess : MonoBehaviour {
 		}
 	 // */	
 	}
-	//public Sockets returnSocket()
-	//{
-	//	return socks;
-	//}
+	public Sockets returnSocket()
+	{
+		return socks;
+	}
 	
 	
 	

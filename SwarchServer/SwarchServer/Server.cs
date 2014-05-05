@@ -23,7 +23,8 @@ namespace SwarchServer
         protected static double[] ballLocation;
         protected static char[] delimiter = { '\\' };
 
-        protected static TcpClient[] clientsArray;
+       // protected static TcpClient[] clientsArray;
+        protected static ArrayList clientsArray = new ArrayList(); 
         // bool allClientsReady = false;
         protected static bool client1Start = false;
         protected static bool client2Start = false;
@@ -58,12 +59,15 @@ namespace SwarchServer
         // goalWall[1] -- right(p2)
         protected static double[] goalWall;
         protected static int sleepTime;
+        protected static bool startedProcess;
 
-
-        protected static ArrayList clientsEntered = new ArrayList();
+        protected static List<Client> clientsEntered = new List<Client>();
 
         protected struct gameData
         {
+            public string userName;
+            public string password;
+           
             public string action;
             public double posX;
             public double posY;
@@ -73,6 +77,24 @@ namespace SwarchServer
 
         }
 
+        protected struct Client
+        {
+            // clientTCP
+            public TcpClient TCPclient;
+
+            // client streamWriter
+            public StreamWriter sw;
+
+            //thread
+            public Thread clientThread;
+
+            //queue
+            public Queue clientQueue;
+            
+            // clientNumber
+            public int clientNumber;
+        }
+
         //protected static List<gameData> clientData = new List<gameData>(); // array of sturct for each client info
 
         public Server()
@@ -80,24 +102,22 @@ namespace SwarchServer
             //this.tcpListener = new TcpListener(IPAddress.Any, 4040);
             Socket sock = new Socket();
             sock.startSock();
-            // this.listenThread = new Thread(new ThreadStart(sock.startSock)); //(ListenForClients));
-            //  this.listenThread.Start();
-            //clientsArray = new TcpClient[2] { null, null };
+            
         }
 
 // THREAD ESTABLISH CONNECTIONS =======================================================================================
 private class Socket//private void ListenForClients()  
 {
     public TcpListener tcpListener;
-    int clientsConnected;
+    public int clientsConnected;
     //TcpClient[] clientsArray;
     Thread clientThread;
     //Thread clientThread2;
-    Thread BallThread; 
+    Thread BallThread;
+    Thread processGameThread;
     bool gameStarted;
 
-    public StreamWriter sw1;
-    public StreamWriter sw2;
+    
     Object thisLock = new Object();
     public DateTime p1T2;
     public DateTime p2T2;
@@ -106,7 +126,8 @@ private class Socket//private void ListenForClients()
     {
         this.tcpListener = new TcpListener(IPAddress.Any, 4040);
         this.tcpListener.Start();
-        clientsArray = new TcpClient[2] { null, null };
+        //clientsArray = new TcpClient[2] { null, null };
+        clientsConnected = 0;
         gameStarted = false;
 
         pad1 = new double[] { 0, 0 };
@@ -114,12 +135,11 @@ private class Socket//private void ListenForClients()
         wallBounds = new double[] { 0, 0 };
         goalWall = new double[] { 0, 0 };
 
-        // gameData p1CollisionCompare = new gameData();
-        // gameData p2CollisionCompare = new gameData();
         sendHit = false;
         sendScore = false;
         p1T2 = new DateTime();
         p2T2 = new DateTime();
+        startedProcess = false;
 
         sleepTime = 100; // change time to simulate delay (in ms)
 
@@ -131,8 +151,6 @@ private class Socket//private void ListenForClients()
         while (true)
         {
 
-            //if (clientsConnected < 2)
-           // {
                 //blocks until a client has connected to the server
                 TcpClient client = this.tcpListener.AcceptTcpClient();
 
@@ -143,69 +161,43 @@ private class Socket//private void ListenForClients()
                 Console.WriteLine("client RemoteEndPt: " +
                                     tcpClientTemp.Client.RemoteEndPoint);
 
-                //store the clients in array
-
-                clientsArray[clientsConnected] = tcpClientTemp;
-
                 clientsConnected++;
 
-                NetworkStream clientnws = client.GetStream();
+                //store the clients in array
+           
+                clientsArray.Add( tcpClientTemp);
 
-                StreamWriter swClientNum = new StreamWriter(clientnws);
-                swClientNum.AutoFlush = true;
-
-                swClientNum.WriteLine("playNum\\{0}", clientsConnected);
 
                 Console.WriteLine("clients Connected " + clientsConnected);
-           // }
 
 
-           // if (clientsConnected == 2 && !gameStarted)
-            //{
-              //  Console.WriteLine("\n Let The Game Begin! ");
+                NetworkStream nws1 = (((TcpClient)clientsArray[clientsConnected-1]).GetStream()); //client.GetStream();
 
-
-
-                NetworkStream nws1 = clientsArray[0].GetStream(); //client.GetStream();
-               // NetworkStream nws2 = clientsArray[1].GetStream();
-
-                //sw1 = new StreamWriter(nws1);
+                StreamWriter sw1 = new StreamWriter(nws1);
                 sw1.AutoFlush = true;
 
-                //sw2 = new StreamWriter(nws2);
-                //sw2.AutoFlush = true;
+                sw1.WriteLine("connected");
+               
+                ThreadSock tSock1 = new ThreadSock(nws1, this);
 
+            
+                Client tempClient = new Client();
 
-                //sw1.WriteLine("canSendStart");
-                //sw2.WriteLine("canSendStart");
+                tempClient.clientThread = new Thread(
+                            new ParameterizedThreadStart(tSock1.HandleClientComm));
+
+                tempClient.TCPclient= tcpClientTemp;
+
+                tempClient.sw = sw1;
+
+                tempClient.clientNumber = clientsConnected;
+                
+            clientsEntered.Add(tempClient);
+                
+            tempClient.clientThread.Start(tempClient.TCPclient);
 
                 
 
-
-                ThreadSock tSock1 = new ThreadSock(nws1, this);
-
-                //ThreadSock tSock2 = new ThreadSock(nws2, this);
-
-
-                //clientThread = new Thread(
-                //    new ParameterizedThreadStart(tSock1.HandleClientComm)); //(HandleClientComm));
-
-                //clientThread2 = new Thread(
-                //        new ParameterizedThreadStart(tSock2.HandleClientComm));
-
-
-                //clientThread.Start(clientsArray[0]);
-                //clientThread2.Start(clientsArray[1]);
-
-
-
-
-               clientsEntered.Add(new Thread(
-                        new ParameterizedThreadStart(tSock1.HandleClientComm)));
-
-
-              // clientsEntered[clientsEntered.Count - 1];
-            
             //===========================================================
                 //BallControl ballc = new BallControl(nws1, nws2);
 
@@ -216,187 +208,94 @@ private class Socket//private void ListenForClients()
            //===========================================================
 
 
-                 // *** THIS WILL BE A SEPEATE THREAD
-                processGame();
-                //gameStarted = true;
-            //}
-
-
-
-        }
-    }
-    // process the game state to display for both players
-    public void processGame()
-    {
-        //data[0] - action       
-        //data[1] - movement
-
-        //receive string: "pad\\ 1\\ 50" - [action, player, position] 
-
-        while (clientsConnected == 2)  // clientsConnected--; => when a client disconnects
-        {
-            gameData gd1;
-            gameData gd2;
-
-            //**** DELAY HIT, PADDLE, START
-            //lock (thisLock)
-            //{
-            if (client1Queue.Count != 0)
-            {
-                lock (thisLock)
+                if (!startedProcess)
                 {
-                    gd1 = (gameData)client1Queue.Dequeue();
+                    processGame PG = new processGame();
+                    processGameThread = new Thread(new ThreadStart( PG.startProcessGame));
+                    processGameThread.Start();
+                    startedProcess = true;
                 }
 
-                switch (gd1.action)
-                {
-                    case "pad":
-                        {
-                            pad1[1] = gd1.movement1;
 
-                            Thread.Sleep(sleepTime);
-                            sw2.WriteLine("pad\\{0}", gd1.movement1);
-                            // Console.WriteLine("\nWROTE TO SW2 -- {0}", gd1.movement1);
-                            break;
-                        }
-                    case "hit":
-                        {
+            
 
-                            // DELAY
-                            //gotHit = true;
-                            //p1CollisionCompare = gd1;
-
-
-
-                            // if Wall hit just send -Y speed 
-                            //sw1.WriteLine("hit\\{0}\\{1}", currentSpeed[0], (currentSpeed[1]*-1));  
-
-                            break;
-                        }
-                    case "lat":
-                        {
-                            p1T2 = DateTime.Now;
-
-                            Thread.Sleep(sleepTime);
-                            sw1.WriteLine("lat\\" + p1T2);
-                            break;
-                        }
-
-
-
-                    default:
-                        break;
-
-                }
-            }
-            //}
-            //lock (thisLock)
-            // {
-            if (client2Queue.Count != 0)
-            {
-                lock (thisLock)
-                {
-                    gd2 = (gameData)client2Queue.Dequeue();
-                }
-
-                switch (gd2.action)
-                {
-                    case "pad":
-                        {
-                            pad2[1] = gd2.movement1;
-
-                            Thread.Sleep(sleepTime);
-                            sw1.WriteLine("pad\\{0}", gd2.movement1);
-                            //  Console.WriteLine("\nWROTE TO SW1 -- {0}", gd2.movement1);
-                            break;
-                        }
-                    case "hit":
-                        {
-
-                            // DELAY
-                            // gotHit = true;
-                            // p2CollisionCompare = gd2;
-
-                            //sw2.WriteLine("hit\\{0}\\{1}", currentSpeed[0], (currentSpeed[1]*-1));
-
-                            break;
-                        }
-                    case "lat":
-                        {
-                            p2T2 = DateTime.Now;
-
-                            Thread.Sleep(sleepTime);
-                            sw2.WriteLine("lat\\" + p2T2); //
-                            break;
-                        }
-
-                    default:
-                        break;
-                }
-            }
-
-
-            // }
-
-            ///*
-            if (sendHit)
-            {
-                double[] speedToSend = currentSpeed;
-                double[] ballToSend = ballLocation;
-                double timeToSend = hitTime; //physTimer.Elapsed.TotalSeconds;
-
-                Thread.Sleep(sleepTime);
-                sw1.WriteLine("hit\\{0}\\{1}\\{2}\\{3}\\{4}",
-                            speedToSend[0], speedToSend[1], ballToSend[0],
-                            ballToSend[1], timeToSend);
-
-
-                sw2.WriteLine("hit\\{0}\\{1}\\{2}\\{3}\\{4}",
-                            speedToSend[0], speedToSend[1], ballToSend[0],
-                            ballToSend[1], timeToSend);
-
-                sendHit = false;
-                physTimer.Restart();
-
-            }
-
-
-            if (sendScore)
-            {
-                sw1.WriteLine("points\\{0}\\{1}", Score[0], Score[1]);
-                sw2.WriteLine("points\\{0}\\{1}", Score[0], Score[1]);
-                sendScore = false;
-            }
-            // */
-            //}
         }
     }
 
 }
-// THREAD ESTABLISH CONNECTIONS  (END)=======================================================================================
+
+// PROCESS CLASS (THREADED) ========================================================================================
+
+
+private class processGame
+{
+
+    Object thisLock = new Object();
+
+
+  public processGame()
+  {
+
+
+  }
+
+    public void startProcessGame()
+    {
+        while (clientsEntered.Count != 0)
+        {
+            gameData gd1;
+
+            for (int i = 0; i < clientsEntered.Count; ++i)
+            {
+                Client tempClient = clientsEntered[i];
+
+                if (tempClient.clientQueue != null && tempClient.clientQueue.Count != 0)
+                {
+                    lock (thisLock)
+                    {
+
+                        gd1 = (gameData)tempClient.clientQueue.Dequeue();  //(gameData)client1Queue.Dequeue();
+                    }
+
+                    switch (gd1.action)
+                    {
+                        case "userAndPass":
+                            {
+                                // enter database
+
+                                tempClient.sw.WriteLine("correctUserPass");
+                                //sw2.WriteLine("pad\\{0}", gd1.movement1);
+
+                                break;
+                            }
+
+
+
+
+
+                        default:
+                            break;
+
+                    }
+                }
+            }
+
+          
+        }
+    }
+}
+
+// PROCESS CLASS (THREADED) (END) ========================================================================================
 
 // THREAD READ IN INFO =======================================================================================
 private class ThreadSock
 {
-    //private Socket socket;
-    //private NetworkStream nws;
-    //StreamWriter sw;        
-
-
-
+   
     public ThreadSock(NetworkStream nwsIn, Socket sockIn)
     {
-        //nws = nwsIn;
-        //socket = sockIn;
-
-
-        //sw = new StreamWriter(nws);
-        //physTimer.Start();
-        //sw.WriteLine("Start\\5");
-
+        
         client1Queue = new Queue();
-        client2Queue = new Queue();
-
+       
     }
 
 
@@ -407,29 +306,50 @@ private class ThreadSock
         NetworkStream clientStream = tcpClient.GetStream();
         NetworkStream nws = tcpClient.GetStream();
         StreamReader sr = new StreamReader(nws);
-        gameData gd = new gameData();
+        gameData gamedata = new gameData();
 
-        byte[] message = new byte[4096];
         //int bytesRead;
         string readData;
         Object thisLock = new Object();
+        Client tempClient= new Client();
+        int clientIndex = -9;
+
+        lock (thisLock)
+        {
+          tempClient = clientsEntered.Find(x => x.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint);
+          clientIndex = clientsEntered.IndexOf(tempClient);
+        }
+    /*   // MANUALLY SEARCHING OF MATCHING CLIENT ****************************************
+        int clientIndex = -9;
+        bool found =false;
+        
+
+        for (int j = 0; j <= clientsEntered.Count-1 && !found; ++j )
+        {
+            tempClient = clientsEntered[j];
+           
+            if (tempClient.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint)
+            {
+                found = true;
+                clientIndex = j;
+            }
+        }
+    */   // MANUALLY SEARCHING OF MATCHING CLIENT (END)****************************************
+        
+        
+        tempClient.clientQueue = new Queue(); 
+            
 
         while (true)
         {
-            //lock (thisLock)
-            //{
-            //bytesRead = 0;
+            
             readData = "";
 
             try
             {
 
-                //bytesRead = clientStream.Read(message, 0, 4096); // waits until it receives data
                 readData = sr.ReadLine();
 
-
-                // ASCIIEncoding encoder = new ASCIIEncoding();
-                // readData = encoder.GetString(message, 0, bytesRead);
 
             }
             catch
@@ -441,164 +361,27 @@ private class ThreadSock
             string[] data = readData.Split(delimiter);
 
             //readData
-            if (data[0] == "close") //(bytesRead == 0)  // close the client (enter here) when disconnect data reveiced
+            if (data[0] == "close") 
             {
                 //the client has disconnected from the server
                 break;
             }
             //readData
-            if (data[0] == "start")
+            if (data[0] == "userAndPass")
             {
-                if (tcpClient.Client.RemoteEndPoint == clientsArray[0].Client.RemoteEndPoint) //gd.action = readData;  // when game is starting
-                {
-                    client1Start = true;
-
-                    //string[] data = readData.Split(delimiter);
-
-                    pad1[0] = Convert.ToDouble(data[1]);
-                    pad1[1] = Convert.ToDouble(data[2]);
-
-
-                    wallBounds[0] = Convert.ToDouble(data[3]);
-                    wallBounds[1] = Convert.ToDouble(data[4]);
-
-                    goalWall[0] = Convert.ToDouble(data[5]);
-                    goalWall[1] = Convert.ToDouble(data[6]);
-
-                    initBallPosX = Convert.ToDouble(data[7]);
-                    initBallPosY = Convert.ToDouble(data[8]);
-
-
-
-
-                }
-                else if (tcpClient.Client.RemoteEndPoint == clientsArray[1].Client.RemoteEndPoint) //gd.action = readData;  // when game is starting
-                {
-                    client2Start = true;
-
-                    //string[] data = readData.Split(delimiter);
-
-                    pad2[0] = Convert.ToDouble(data[1]);
-                    pad2[1] = Convert.ToDouble(data[2]);
-
-
-                }
-                //clientData.Add(gd);
-            }
-            if (data[0] == "startNextRound")
-            {
-                if (tcpClient.Client.RemoteEndPoint == clientsArray[0].Client.RemoteEndPoint) //gd.action = readData;  // when game is starting
-                {
-                    nextRoundP1 = true;
-                }
-                else if (tcpClient.Client.RemoteEndPoint == clientsArray[1].Client.RemoteEndPoint) //gd.action = readData;  // when game is starting
-                {
-                    nextRoundP2 = true;
-                }
-            }
-            if (data[0] == "startNewGame")
-            {
-                if (tcpClient.Client.RemoteEndPoint == clientsArray[0].Client.RemoteEndPoint) //gd.action = readData;  // when game is starting
-                {
-                    nextRoundP1 = true;
-                    Score[0] = 0;
-                }
-                else if (tcpClient.Client.RemoteEndPoint == clientsArray[1].Client.RemoteEndPoint) //gd.action = readData;  // when game is starting
-                {
-                    nextRoundP2 = true;
-                    Score[1] = 0;
-                }
-
+                gamedata.action = data[0];
+                gamedata.userName = data[1];
+                gamedata.password = data[2];
+                
             }
 
-
-            else if (readData != "" || readData != null)
+            lock (thisLock)
             {
-                //data[0] - action  
-                //data[1] - pos x
-                //data[2] - pos y
-                //data[3] - movement x
-                //data[4] - movement y
-                //data[5] - timeStamp
-
-
-                //string[] data = readData.Split(delimiter);
-
-                gd.action = data[0];
-
-                if (data.Length == 2)
-                {
-                    double move1 = Convert.ToDouble(data[1]);
-
-                    gd.movement1 = move1;
-                }
-                /*
-                                        if (data.Length == 3)
-                                        {
-                                            double move2 = Convert.ToDouble(data[2]);
-                                            gd.movement2 = move2;
-                                        }
-                                        if (data.Length == 4)
-                                        {
-                                            DateTime time = Convert.ToDateTime(data[3]);
-                                            gd.timeStamp = time;
-                                        }
-                                        if(data.Length == 5)
-                                        {
-                                            DateTime time = Convert.ToDateTime(data[3]);
-                                            gd.timeStamp = time;
-
-
-                                        }
-                    */
-                if (data.Length == 6)
-                {
-                    double posx = Convert.ToDouble(data[1]);
-                    double posy = Convert.ToDouble(data[2]);
-
-                    gd.posX = posx;
-                    gd.posY = posy;
-
-                    double move1 = Convert.ToDouble(data[3]);
-                    double move2 = Convert.ToDouble(data[4]);
-
-                    gd.movement1 = move1;
-                    gd.movement2 = move2;
-
-
-                    DateTime time = Convert.ToDateTime(data[5]);
-                    gd.timeStamp = time;
-                }
-
-                // if (data[0] == "lat")
-                //{
-                //     gd.timeStamp = (data[1]);
-                // }
-
-
-
-
-                //place in own clients queue
-                if (tcpClient.Client.RemoteEndPoint ==
-                        clientsArray[0].Client.RemoteEndPoint)
-                {
-                    lock (thisLock)
-                    {
-                        client1Queue.Enqueue(gd);
-                    }
-                }
-                else if (tcpClient.Client.RemoteEndPoint ==
-                        clientsArray[1].Client.RemoteEndPoint)
-                {
-                    lock (thisLock)
-                    {
-                        client2Queue.Enqueue(gd);
-                    }
-                }
-
-
+                tempClient.clientQueue.Enqueue(gamedata);
+                clientsEntered[clientIndex] = tempClient;
             }
-            //} 
+
+            
         }
 
         tcpClient.Close();
@@ -608,6 +391,8 @@ private class ThreadSock
 }
 // THREAD READ IN INFO  (END) =======================================================================================
 
+
+// NOT NEED YET vvvvv============================================================================================================
 private class BallControl
 {
 
