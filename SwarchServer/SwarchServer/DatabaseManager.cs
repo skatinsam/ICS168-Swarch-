@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +16,7 @@ namespace SwarchServer
         public void DatabaseManager()
         {
             //Insert name of database here
-            database = "Data Source= ";
+            database = "Data Source=UserDatabase.db”;
         }
 
         //BASIC DATABASE FUNCTIONS THAT ARE NEEDED
