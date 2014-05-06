@@ -63,6 +63,8 @@ namespace SwarchServer
 
         protected static List<Client> clientsEntered = new List<Client>();
 
+        protected static DatabaseManager database;
+
         protected struct gameData
         {
             public string userName;
@@ -235,7 +237,7 @@ private class processGame
 
   public processGame()
   {
-
+      database = new DatabaseManager();
 
   }
 
@@ -262,7 +264,8 @@ private class processGame
                         case "userAndPass":
                             {
                                 // enter database
-
+                                database.connect(gd1.userName, gd1.password);
+                               
                                 tempClient.sw.WriteLine("correctUserPass");
                                 //sw2.WriteLine("pad\\{0}", gd1.movement1);
 
