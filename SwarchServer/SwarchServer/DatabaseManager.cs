@@ -6,17 +6,22 @@ using System.Data;
 using System.Data.SQLite;
 using System.Threading.Tasks;
 
+
 namespace SwarchServer
 {
     class DatabaseManager
     {
         private string database;
+        
 
         //Initalize Database
         public DatabaseManager()
         {
             //Insert name of database here
             database = "Data Source=UserDatabase.db";
+
+            //Create new MD5 object for hashing
+            
         }
         
         //BASIC DATABASE FUNCTIONS THAT ARE NEEDED
@@ -54,6 +59,7 @@ namespace SwarchServer
         //Inserts value into specific table
         private void insertValue(String table, String user, String info)
         {
+
             String insert = String.Format("INSERT INTO {0}('{1}') VALUES({2});", table, user, info);
 
             try
@@ -108,7 +114,8 @@ namespace SwarchServer
         //  User and password are inserted into the database
         public string connect(String user, String password)
         {
-            String query = String.Format("SELECT name, pass FROM users WHERE name={0} AND pass={1}", user, password);
+
+            String query = String.Format("SELECT name, pass FROM users WHERE name={0}", user);
             DataTable result = runQuery(query);
 
             if (result.Rows.Count > 0)
@@ -135,5 +142,7 @@ namespace SwarchServer
             }
             return "added";
         }
+
+        
     }
 }
