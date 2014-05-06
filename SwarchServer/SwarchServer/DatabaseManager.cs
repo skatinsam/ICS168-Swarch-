@@ -59,8 +59,20 @@ namespace SwarchServer
         //Inserts value into specific table
         private void insertValue(String table, String user, String info)
         {
-
-            String insert = String.Format("INSERT INTO {0}('{1}') VALUES({2});", table, user, info);
+            String insert;
+            if(table.Equals("users"))
+            {
+                insert = String.Format("INSERT INTO {0}('name', 'pass') VALUES('{1}', '{2}')", table, user, info);
+            }
+            else if (table.Equals("scores"))
+            {
+                insert = String.Format("INSERT INTO {0}('user', 'score') VALUES('{1}', '{2}')", table, user, info);
+            }
+            else
+            {
+                Console.WriteLine("DATABASE MANAGER ERROR: INSERT");
+                throw new Exception();
+            }
 
             try
             {
@@ -115,7 +127,7 @@ namespace SwarchServer
         public string connect(String user, String password)
         {
 
-            String query = String.Format("SELECT name, pass FROM users WHERE name={0}", user);
+            String query = String.Format("SELECT name, pass FROM users WHERE name='{0}'", user);
             DataTable result = runQuery(query);
 
             if (result.Rows.Count > 0)

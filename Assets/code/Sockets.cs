@@ -13,8 +13,8 @@ public class Sockets : MonoBehaviour {
 	
 	
 	//const string SERVER_LOCATION =   "128.195.77.35";  
-	
-	const string SERVER_LOCATION =    "169.234.40.7";  //<-- **** CHANGE for every connection to internet 
+
+    const string SERVER_LOCATION = "169.234.27.180";  //<-- **** CHANGE for every connection to internet 
 	
 	const int SERVER_PORT = 4040; //YOUR PORT NUMBER; //FILL THESE OUT FOR YOUR OWN SERVER
 	
