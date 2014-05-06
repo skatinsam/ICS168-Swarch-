@@ -269,7 +269,7 @@ private class processGame
                                 
                                 string response = db.connect(gd1.userName, gd1.password);
 
-                                if(response == "connect")
+                                if(response == "connect" || response == "added")
                                     tempClient.sw.WriteLine("correctUserPass");
                                 else
                                     tempClient.sw.WriteLine("incorrectUserPass");
