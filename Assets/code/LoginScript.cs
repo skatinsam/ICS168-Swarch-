@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Security.Cryptography;
+using System.Text;
 
 public class LoginScript : MonoBehaviour 
 {
     public string username = "Enter username";
-    public string password = "Enter password";
+    public string password = "";
 
+    private MD5 md5;
     bool loginEntered = false;
 
 	private GameProcess gameProcess;
@@ -25,8 +28,9 @@ public class LoginScript : MonoBehaviour
 		gameProcess = GameObject.Find("GameProcess").GetComponent<GameProcess>();
 		DontDestroyOnLoad(gameProcess);
 		DontDestroyOnLoad(guiT);
-		//DontDestroyOnLoad(gameProcess.socks);
 		canTryLogin = false;
+
+        md5 = MD5.Create();
 
 
 	}
@@ -81,7 +85,7 @@ public class LoginScript : MonoBehaviour
 			
 			if (GUI.Button(new Rect(Screen.width / 2, Screen.height / 4, 100, 20), "Log In"))
             {
-                if (username == "Enter username" || password == "Enter password")
+                if (username == "Enter username" || password == "")
                 {
 					guiT.text = "Incorrect Username or Password ";
                     Debug.Log("Please try again");
@@ -90,10 +94,10 @@ public class LoginScript : MonoBehaviour
                 {
 					gameProcess.returnSocket().sendQueue.Enqueue("userAndPass\\"
 					                                    + username +"\\"
-					                                    + password );
+					                                    + hash(password) );
 
 
-                     Debug.Log("Login successful");
+            //         Debug.Log("Login successful");
                      loginEntered = true;
                      
 					
@@ -179,5 +183,18 @@ public class LoginScript : MonoBehaviour
 */
     }
 
+    public string hash(string info)
+    {
+
+        byte[] data = md5.ComputeHash(Encoding.UTF8.GetBytes(info));
+        StringBuilder s = new StringBuilder();
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            s.Append(data[i].ToString("x2"));
+        }
+
+        return s.ToString();
+    }
 
 }

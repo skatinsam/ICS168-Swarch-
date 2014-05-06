@@ -62,6 +62,7 @@ namespace SwarchServer
         protected static bool startedProcess;
 
         protected static List<Client> clientsEntered = new List<Client>();
+        protected static DatabaseManager db = new DatabaseManager();
 
        
 
@@ -265,17 +266,22 @@ private class processGame
                         case "userAndPass":
                             {
                                 // enter database
+<<<<<<< HEAD
                                 
                                
                                 tempClient.sw.WriteLine("correctUserPass");
+=======
+                                string response = db.connect(gd1.userName, gd1.password);
+
+                                if(response == "connect")
+                                    tempClient.sw.WriteLine("correctUserPass");
+                                else
+                                    tempClient.sw.WriteLine("incorrectUserPass");
+>>>>>>> 03be28127e1c816facfede3d70d2a2336f926abc
                                 //sw2.WriteLine("pad\\{0}", gd1.movement1);
 
                                 break;
                             }
-
-
-
-
 
                         default:
                             break;
@@ -390,9 +396,9 @@ private class ThreadSock
 
         tcpClient.Close();
     }
-
-
 }
+
+
 // THREAD READ IN INFO  (END) =======================================================================================
 
 
