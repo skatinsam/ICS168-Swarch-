@@ -65,7 +65,7 @@ namespace SwarchServer
         protected static DatabaseManager db = new DatabaseManager();
 
        
-
+        // used to stores inportant info about the game
         protected struct gameData
         {
             public string userName;
@@ -80,18 +80,20 @@ namespace SwarchServer
 
         }
 
+        // used to store client communication for thread 
+        // and reading and writing 
         protected struct Client
         {
-            // clientTCP
+            // clientTCP - client connection
             public TcpClient TCPclient;
 
-            // client streamWriter
+            // client streamWriter - write out data
             public StreamWriter sw;
 
-            //thread
+            //thread - client thread
             public Thread clientThread;
 
-            //queue
+            //queue - store info
             public Queue clientQueue;
             
             // clientNumber
@@ -109,7 +111,8 @@ namespace SwarchServer
         }
 
 // THREAD ESTABLISH CONNECTIONS =======================================================================================
-private class Socket//private void ListenForClients()  
+
+private class Socket
 {
     public TcpListener tcpListener;
     public int clientsConnected;
@@ -173,8 +176,8 @@ private class Socket//private void ListenForClients()
 
                 Console.WriteLine("clients Connected " + clientsConnected);
 
-
-                NetworkStream nws1 = (((TcpClient)clientsArray[clientsConnected-1]).GetStream()); //client.GetStream();
+                // client sream for reading and writing
+                NetworkStream nws1 = (((TcpClient)clientsArray[clientsConnected-1]).GetStream());
 
                 StreamWriter sw1 = new StreamWriter(nws1);
                 sw1.AutoFlush = true;
@@ -183,7 +186,7 @@ private class Socket//private void ListenForClients()
                
                 ThreadSock tSock1 = new ThreadSock(nws1, this);
 
-            
+                // client sturt that holds thread, stream, client Number
                 Client tempClient = new Client();
 
                 tempClient.clientThread = new Thread(
@@ -195,6 +198,7 @@ private class Socket//private void ListenForClients()
 
                 tempClient.clientNumber = clientsConnected;
                 
+            // array that holds clients to be used globally 
             clientsEntered.Add(tempClient);
                 
             tempClient.clientThread.Start(tempClient.TCPclient);
@@ -210,7 +214,7 @@ private class Socket//private void ListenForClients()
                // BallThread.Start();
            //===========================================================
 
-
+                
                 if (!startedProcess)
                 {
                     processGame PG = new processGame();
@@ -218,9 +222,6 @@ private class Socket//private void ListenForClients()
                     processGameThread.Start();
                     startedProcess = true;
                 }
-
-
-            
 
         }
     }
@@ -258,7 +259,7 @@ private class processGame
                     lock (thisLock)
                     {
 
-                        gd1 = (gameData)tempClient.clientQueue.Dequeue();  //(gameData)client1Queue.Dequeue();
+                        gd1 = (gameData)tempClient.clientQueue.Dequeue();
                     }
 
                     switch (gd1.action)
@@ -293,6 +294,8 @@ private class processGame
 // PROCESS CLASS (THREADED) (END) ========================================================================================
 
 // THREAD READ IN INFO =======================================================================================
+
+//class to handle the client incoming info
 private class ThreadSock
 {
    
@@ -396,8 +399,7 @@ private class ThreadSock
 
 // THREAD READ IN INFO  (END) =======================================================================================
 
-
-// NOT NEED YET vvvvv============================================================================================================
+// **** handle other info about the game (NOT NEED YET)
 private class BallControl
 {
 

@@ -54,9 +54,7 @@ public class LoginScript : MonoBehaviour
 			guiT.text = "Connect Failed, try again ";
 			print ("\nCONNECTION HAS FAILED, TRY AGAIN ");
 			failedConnection =true;
-			//loginEntered = false;
-			//guiT.text = "";
-			// ***** have a button here incase need to try to connect to server again 
+
 		}
 	}
 
@@ -64,18 +62,11 @@ public class LoginScript : MonoBehaviour
     {
         
 
-		if ( GUI.Button( new Rect( 0, 0, 100, 20), "Disconnect"))
+		if ( GUI.Button( new Rect( 0, 50, 100, 20), "Disconnect"))
 		{
-			//********* COMPLETE THE FOLLOWING CODE
-			//********* KILL THREAD AND SEVER CONNECTION
-			
-			//returnSocket().SendTCPPacket ((byte) (process.commands[(int)GameProcess.codes.roll]));
-			
-			//process.sendEndGame();
-			
+						
 			gameProcess.returnSocket().endThread();
 			gameProcess.returnSocket().Disconnect();
-			
 
 		}
 		if (!loginEntered && canTryLogin)
@@ -96,13 +87,9 @@ public class LoginScript : MonoBehaviour
 					                                    + username +"\\"
 					                                    + hash(password) );
 
-
-            //         Debug.Log("Login successful");
                      loginEntered = true;
-                     
-					
-				}
 
+				}
 
 			}
 
@@ -133,7 +120,6 @@ public class LoginScript : MonoBehaviour
 		}
 
 	}
-	//}
 	
     void Update()
     {
@@ -161,26 +147,11 @@ public class LoginScript : MonoBehaviour
 			if(splitData[0] == "incorrectUserPass")
 			{
 				loginEntered = false;
-				//OnGUI();
+
 
 			}
 		}
-/*
-        if(Input.GetKeyDown(KeyCode.Return))
-        {
-            Debug.Log("Something");
-            if (username == "Enter username" || password == "Enter password")
-            {
-                Debug.Log("Please try again");
-            }
-            else
-            {
-                Debug.Log("Login successful");
-                loginEntered = true;
-                Application.LoadLevel("swarch(Whale)");
-            }
-        }
-*/
+
     }
 
     public string hash(string info)
