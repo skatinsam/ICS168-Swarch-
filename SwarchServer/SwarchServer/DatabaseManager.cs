@@ -20,8 +20,6 @@ namespace SwarchServer
             //Insert name of database here
             database = "Data Source=UserDatabase.db";
 
-            //Create new MD5 object for hashing
-            
         }
         
         //BASIC DATABASE FUNCTIONS THAT ARE NEEDED
@@ -56,11 +54,13 @@ namespace SwarchServer
             return table;
         }
 
-        //Inserts value into specific table
+        //Inserts value into specific table. 'info' can contain either a password or a score. 
+        //Depending on what 'table' ('users' or 'scores') to insert to, 'info' will reflect the appropriate value.
+        //'user' is the username
         private void insertValue(String table, String user, String info)
         {
             String insert;
-            if(table.Equals("users"))
+            if(table.Equals("users")) 
             {
                 insert = String.Format("INSERT INTO {0}('name', 'pass') VALUES('{1}', '{2}')", table, user, info);
             }
