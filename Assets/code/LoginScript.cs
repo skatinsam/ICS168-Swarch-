@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
@@ -137,15 +138,25 @@ public class LoginScript : MonoBehaviour
 				canTryLogin = true;
 			}
 
-			if(splitData[0] == "correctUserPass")
+			if(splitData[0] == "clientNumber")
 			{
+				gameProcess.clientNumber = (Convert.ToInt32(splitData[1]));
+
+				for(int i = 2; i< splitData.Length; ++i)
+				{
+					gameProcess.pelletsLocation.Add(float.Parse(splitData[i])); 
+				}
 
 				Application.LoadLevel("swarch(Whale)");
+
+
+
 				gameProcess.loadPellets = true;
 			}
             
 			if(splitData[0] == "incorrectUserPass")
 			{
+				guiT.text = "incorrect password or username, try again ";
 				loginEntered = false;
 
 

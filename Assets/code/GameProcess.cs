@@ -27,7 +27,7 @@ public class GameProcess : MonoBehaviour {
 
 	public Transform pell;
 	public ArrayList pellets;
-
+	public List<float> pelletsLocation;
 	public int numOfPlayer;
 	public DateTime t1; 
 	public DateTime t4;
@@ -42,9 +42,10 @@ public class GameProcess : MonoBehaviour {
 		socks = new Sockets();
 
 		pellets = new ArrayList();
+		pelletsLocation = new List<float>();
 		data = "";
 		loadPellets = false;
-
+		 
 
 		startGame = false;
 		startNextRound = false;
@@ -80,19 +81,24 @@ public class GameProcess : MonoBehaviour {
 
 	  if(loadPellets)
 	  {
-		for(int i =0; i < 5; ++i)
+		for(int i =0; i < 10; i = i+2)
 		{
 			
-			Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
-			                                                   0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
+
+			//Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
+			//                                                   0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
 
 			
+
+				Transform tempPell = Instantiate(pell, new Vector3(pelletsLocation[i], 
+				                        0,  pelletsLocation[i+1]), Quaternion.identity) as Transform;
+
 			pellets.Add(tempPell ); 
 			
-				loadPellets = false;
+
 			
 		}
-	        
+			loadPellets = false;    
 	  }
 		
 	
