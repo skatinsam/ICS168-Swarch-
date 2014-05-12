@@ -12,9 +12,13 @@ using System.Threading;
 public class Sockets : MonoBehaviour {
 	
 	
-	//const string SERVER_LOCATION =   "128.195.77.35";  
 
+<<<<<<< HEAD
     const string SERVER_LOCATION = "169.234.58.31";  //<-- **** CHANGE for every connection to internet 
+=======
+
+	const string SERVER_LOCATION = "128.195.70.76";  //<-- **** CHANGE for every connection to internet 
+>>>>>>> 70e38f3a4052a5d27a42522199f777b8f584a553
 	
 	const int SERVER_PORT = 4040; //YOUR PORT NUMBER; //FILL THESE OUT FOR YOUR OWN SERVER
 	
@@ -43,8 +47,7 @@ public class Sockets : MonoBehaviour {
 		connected = false;
 		recvBuffer = new Queue();
 		sendQueue = new Queue();
-		//uniClock = new Stopwatch();
-		//dt = NTPTime.getNTPTime ( dt, ref uniClock );
+
 		
 	}
 	
@@ -54,10 +57,7 @@ public class Sockets : MonoBehaviour {
 		try
 		{    	
 			client = new TcpClient(SERVER_LOCATION, SERVER_PORT ); 
-			
-			//?? nws = new NetworkStream; //??
-			
-			
+
 			if(client.Connected)
 			{
 				nws = client.GetStream();
@@ -97,8 +97,7 @@ public class Sockets : MonoBehaviour {
 	
 	public bool Disconnect ()
 	{
-		//!! //********* COMPLETE THE FOLLOWING CODE
-		
+
 		try
 		{
 			
@@ -125,15 +124,15 @@ public class Sockets : MonoBehaviour {
 		return true;
 	}
 	
-	public void SendTCPPacket(string toSend) //( byte toSend )
+	public void SendTCPPacket(string toSend) 
 	{
-		//??  //********* COMPLETE THE FOLLOWING CODE
+
 		try
 		{ 
 			
-			//nws.WriteByte(toSend);
+
 			sw.WriteLine (toSend);
-			//sw.Flush();
+
 			
 		}
 		catch ( Exception ex )
@@ -142,16 +141,7 @@ public class Sockets : MonoBehaviour {
 		}	
 	}
 	
-	public void measureLatency () //UN-NECESSARY
-	{
-	}
-	
-	public int returnLatency(){//UN-NECESSARY
-		//return latency;
-		return 0;
-	}
-	
-	
+
 	public void endThread(){
 		threadState = false;
 	}

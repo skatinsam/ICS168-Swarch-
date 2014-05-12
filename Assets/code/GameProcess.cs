@@ -27,7 +27,7 @@ public class GameProcess : MonoBehaviour {
 
 	public Transform pell;
 	public ArrayList pellets;
-
+	public List<float> pelletsLocation;
 	public int numOfPlayer;
 	public DateTime t1; 
 	public DateTime t4;
@@ -42,9 +42,10 @@ public class GameProcess : MonoBehaviour {
 		socks = new Sockets();
 
 		pellets = new ArrayList();
+		pelletsLocation = new List<float>();
 		data = "";
 		loadPellets = false;
-
+		 
 
 		startGame = false;
 		startNextRound = false;
@@ -59,21 +60,14 @@ public class GameProcess : MonoBehaviour {
 		tServer = new DateTime();
 		canSendStart = false;
 		totalLat = 0;
-		//t1 = DateTime.UtcNow; 
-		
+
 		
 	}
 
 	void OnGUI()
 	{
-		if ( GUI.Button( new Rect( 0, 0, 100, 20), "Disconnect"))
+		if ( GUI.Button( new Rect( 0, 50, 100, 20), "Disconnect"))
 		{
-			//********* COMPLETE THE FOLLOWING CODE
-			//********* KILL THREAD AND SEVER CONNECTION
-			
-			//returnSocket().SendTCPPacket ((byte) (process.commands[(int)GameProcess.codes.roll]));
-			
-			//process.sendEndGame();
 			
 			socks.endThread();
 			socks.Disconnect();
@@ -87,33 +81,30 @@ public class GameProcess : MonoBehaviour {
 
 	  if(loadPellets)
 	  {
-		for(int i =0; i < 5; ++i)
+		for(int i =0; i < 10; i = i+2)
 		{
-			//pell;
-			Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
-			                                                   0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
 			
-			//temp.name = (i.ToString());
-			//print (temp.name);
+
+			//Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
+			//                                                   0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
+
 			
+
+				Transform tempPell = Instantiate(pell, new Vector3(pelletsLocation[i], 
+				                        0,  pelletsLocation[i+1]), Quaternion.identity) as Transform;
+
 			pellets.Add(tempPell ); 
 			
-				loadPellets = false;
+
 			
 		}
-	        
-			//FindObjectOfType(typeof (YourObject) )
+			loadPellets = false;    
 	  }
 		
-
-
-		//lock(socks.recvBuffer)
-		//{
-	///*	
+	
 		if(socks.recvBuffer.Count > 0)
 		{
-			
-			//data = (string)socks.recvBuffer.Dequeue();
+
 			
 			splitData = data.Split(delemeter);
 			
@@ -127,7 +118,7 @@ public class GameProcess : MonoBehaviour {
 				//setPlayerPaddle(Convert.ToInt32(splitData[1]));
 			}
 			
-			if(splitData[0] == "start") //from server
+			if(splitData[0] == "start") 
 			{
 				startGame = true;
 
@@ -136,7 +127,6 @@ public class GameProcess : MonoBehaviour {
 
 			
 		}
-	 // */	
 	}
 	public Sockets returnSocket()
 	{

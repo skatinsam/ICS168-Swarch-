@@ -17,13 +17,12 @@ public class ThreadSock : MonoBehaviour
 	private StreamReader sr;
 	private System.Object thisLock = new System.Object();
 	
-	//********* COMPLETE THE FOLLOWING CODE
+
 	public ThreadSock (NetworkStream nwsIn, Sockets inSocket )
 	{
-		//?? nws = new NetworkStream(; //nwsIn;
+
 		nws = nwsIn;
-		
-		//?? socks = new Sockets();
+
 		socks = inSocket;
 		
 		sr = new StreamReader(nws);
@@ -32,21 +31,13 @@ public class ThreadSock : MonoBehaviour
 	}
 	public void Service ()
 	{	
-		//lock inside while loop
 		try
 		{
 			lock( thisLock)
 			{
-				
-				// Create an instance of StreamReader to read from a file. 
-				// The using statement also closes the StreamReader. 
-				//using (socks.sr) 
-				//{
-				// while(true)
-				//{
+
 				string line;
-				// Read and display lines from the file until the end of  
-				// the file is reached. 
+			
 				while ((line = sr.ReadLine()) != null) 
 				{
 					
@@ -57,21 +48,7 @@ public class ThreadSock : MonoBehaviour
 				}
 				
 			}
-			
-			
-			//while(true)
-			//{
-			/*
-				if((byteBuffer = (byte)nws.ReadByte()) != -1 )
-				{
-					lock(socks.recvBuffer)
-					{
 
-						socks.recvBuffer.Enqueue(byteBuffer);
-					}
-				}
-              */
-			//	}
 			
 		}
 		catch ( Exception ex )

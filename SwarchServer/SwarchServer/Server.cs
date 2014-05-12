@@ -58,12 +58,31 @@ namespace SwarchServer
         // goalWall[0] -- left(p1)
         // goalWall[1] -- right(p2)
         protected static double[] goalWall;
-        protected static int sleepTime;
+      
         protected static bool startedProcess;
 
         protected static List<Client> clientsEntered = new List<Client>();
         protected static DatabaseManager db = new DatabaseManager();
+        protected static bool passwordAcepted;
+        protected static string initPelletLocation;
+        protected static List<playing> clientsPlaying = new List<playing>();
 
+        protected struct playing
+        {
+           public int clientNumber;
+           public bool isPlaying;
+        }
+
+        protected struct pellet
+        {
+            public int px;
+            public int py;
+
+        }
+
+        protected static List<pellet> gamePellets = new List<pellet>();
+        
+        // used to stores inportant info about the game
         protected struct gameData
         {
             public string userName;
@@ -78,22 +97,28 @@ namespace SwarchServer
 
         }
 
+        // used to store client communication for thread 
+        // and reading and writing 
         protected struct Client
         {
-            // clientTCP
+            // clientTCP - client connection
             public TcpClient TCPclient;
 
-            // client streamWriter
+            // client streamWriter - write out data
             public StreamWriter sw;
 
-            //thread
+            //thread - client thread
             public Thread clientThread;
 
-            //queue
+            //queue - store info
             public Queue clientQueue;
             
             // clientNumber
             public int clientNumber;
+
+           // public bool connected = false;
+
+            //public bool clientpasswordAcepted = false;
         }
 
         //protected static List<gameData> clientData = new List<gameData>(); // array of sturct for each client info
@@ -107,14 +132,15 @@ namespace SwarchServer
         }
 
 // THREAD ESTABLISH CONNECTIONS =======================================================================================
-private class Socket//private void ListenForClients()  
+
+private class Socket
 {
     public TcpListener tcpListener;
     public int clientsConnected;
     //TcpClient[] clientsArray;
     Thread clientThread;
     //Thread clientThread2;
-    Thread BallThread;
+    Thread stateThread;
     Thread processGameThread;
     bool gameStarted;
 
@@ -142,7 +168,17 @@ private class Socket//private void ListenForClients()
         p2T2 = new DateTime();
         startedProcess = false;
 
-        sleepTime = 100; // change time to simulate delay (in ms)
+        for(int i=0; i<4; ++i)  // 4 -- number of player allowable pergame
+        {
+            playing tempP;
+            tempP.clientNumber = i+1;
+            tempP.isPlaying = false;
+
+            clientsPlaying.Add(tempP);
+        
+        }
+
+     
 
     }
     public void startSock()
@@ -171,8 +207,8 @@ private class Socket//private void ListenForClients()
 
                 Console.WriteLine("clients Connected " + clientsConnected);
 
-
-                NetworkStream nws1 = (((TcpClient)clientsArray[clientsConnected-1]).GetStream()); //client.GetStream();
+                // client sream for reading and writing
+                NetworkStream nws1 = (((TcpClient)clientsArray[clientsConnected-1]).GetStream());
 
                 StreamWriter sw1 = new StreamWriter(nws1);
                 sw1.AutoFlush = true;
@@ -181,7 +217,7 @@ private class Socket//private void ListenForClients()
                
                 ThreadSock tSock1 = new ThreadSock(nws1, this);
 
-            
+                // client sturt that holds thread, stream, client Number
                 Client tempClient = new Client();
 
                 tempClient.clientThread = new Thread(
@@ -190,9 +226,11 @@ private class Socket//private void ListenForClients()
                 tempClient.TCPclient= tcpClientTemp;
 
                 tempClient.sw = sw1;
+                tempClient.sw.AutoFlush = true;
 
                 tempClient.clientNumber = clientsConnected;
                 
+            // array that holds clients to be used globally 
             clientsEntered.Add(tempClient);
                 
             tempClient.clientThread.Start(tempClient.TCPclient);
@@ -200,15 +238,15 @@ private class Socket//private void ListenForClients()
                 
 
             //===========================================================
-                //BallControl ballc = new BallControl(nws1, nws2);
+            ClientGameState gs = new ClientGameState();
 
-               // BallThread = new Thread(
-               //         new ThreadStart(ballc.ballLoop));
+                stateThread = new Thread(
+                        new ThreadStart(gs.gameState));
 
-               // BallThread.Start();
+                stateThread.Start();
            //===========================================================
 
-
+                
                 if (!startedProcess)
                 {
                     processGame PG = new processGame();
@@ -217,9 +255,6 @@ private class Socket//private void ListenForClients()
                     startedProcess = true;
                 }
 
-
-            
-
         }
     }
 
@@ -227,6 +262,7 @@ private class Socket//private void ListenForClients()
 
 // PROCESS CLASS (THREADED) ========================================================================================
 
+//main loop for sending out info to each client also access database
 
 private class processGame
 {
@@ -236,7 +272,7 @@ private class processGame
 
   public processGame()
   {
-
+      
 
   }
 
@@ -255,7 +291,7 @@ private class processGame
                     lock (thisLock)
                     {
 
-                        gd1 = (gameData)tempClient.clientQueue.Dequeue();  //(gameData)client1Queue.Dequeue();
+                        gd1 = (gameData)tempClient.clientQueue.Dequeue();
                     }
 
                     switch (gd1.action)
@@ -263,14 +299,45 @@ private class processGame
                         case "userAndPass":
                             {
                                 // enter database
+
                                 string response = db.connect(gd1.userName, gd1.password);
 
-                                if(response == "connect" || response == "added")
-                                    tempClient.sw.WriteLine("correctUserPass");
-                                else
-                                    tempClient.sw.WriteLine("incorrectUserPass");
-                                //sw2.WriteLine("pad\\{0}", gd1.movement1);
+                                if (response == "connect" || response == "added")
+                                {
+                                    //tempClient.sw.WriteLine("correctUserPass");
+                                   // passwordAcepted = true;
+                                   // tempClient.clientpasswordAcepted = true;
+                                   
+                                    bool found= false;
 
+                                    for (int j = 0; j < clientsPlaying.Count && !found; ++j )
+                                    {
+                                        playing play = clientsPlaying[j];
+
+                                        if (!play.isPlaying)
+                                        {
+                                            tempClient.clientNumber = play.clientNumber;
+                                            play.isPlaying = true;
+
+                                            clientsPlaying[j] = play;
+                                            clientsEntered[i] = tempClient;
+
+                                            found = true;
+                                        }
+                                    }
+                                     
+                                   // string stringTemp = String.Format("clientNumber\\{0}", tempClient.clientNumber);
+
+                                    tempClient.sw.WriteLine(string.Concat(String.Format("clientNumber\\{0}", tempClient.clientNumber), initPelletLocation));
+
+                                    //tempClient.sw.WriteLine(initPelletLocation);
+                                }
+                                else
+                                {
+                                    tempClient.sw.WriteLine("incorrectUserPass");
+                                    //sw2.WriteLine("pad\\{0}", gd1.movement1);
+                                }
+                                
                                 break;
                             }
 
@@ -279,6 +346,13 @@ private class processGame
 
                     }
                 }
+
+                //if(tempClient.clientpasswordAcepted)
+                //{
+               //     tempClient.sw.WriteLine(initPelletLocation);
+               // }
+
+
             }
 
           
@@ -289,6 +363,8 @@ private class processGame
 // PROCESS CLASS (THREADED) (END) ========================================================================================
 
 // THREAD READ IN INFO =======================================================================================
+
+//class to handle the client incoming info
 private class ThreadSock
 {
    
@@ -320,24 +396,7 @@ private class ThreadSock
           tempClient = clientsEntered.Find(x => x.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint);
           clientIndex = clientsEntered.IndexOf(tempClient);
         }
-    /*   // MANUALLY SEARCHING OF MATCHING CLIENT ****************************************
-        int clientIndex = -9;
-        bool found =false;
-        
 
-        for (int j = 0; j <= clientsEntered.Count-1 && !found; ++j )
-        {
-            tempClient = clientsEntered[j];
-           
-            if (tempClient.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint)
-            {
-                found = true;
-                clientIndex = j;
-            }
-        }
-    */   // MANUALLY SEARCHING OF MATCHING CLIENT (END)****************************************
-        
-        
         tempClient.clientQueue = new Queue(); 
             
 
@@ -370,7 +429,7 @@ private class ThreadSock
             //readData
             if (data[0] == "userAndPass")
             {
-                gamedata.action = data[0];
+                gamedata.action = data[0];    // ???? might need to create new gamedata for every entry 
                 gamedata.userName = data[1];
                 gamedata.password = data[2];
                 
@@ -392,9 +451,7 @@ private class ThreadSock
 
 // THREAD READ IN INFO  (END) =======================================================================================
 
-
-// NOT NEED YET vvvvv============================================================================================================
-private class BallControl
+private class ClientGameState
 {
 
     public StreamWriter sw1;
@@ -413,25 +470,32 @@ private class BallControl
 
     bool wallHit;
 
+    public Random randPellets;
+    bool startedGame;
+    int numberOfpellets;
+
+    public Random randomGen;
+    List<int> generatedX;
+    List<int> generatedY;
 
     //TEMP
     bool round2;
     double lastLocx;
     double lastLocy;
 
-    public BallControl(NetworkStream nws1, NetworkStream nws2)
+    public ClientGameState()
     {
-        ballLocation = new double[] { 0, 0, 1, 1 };
+        ballLocation = new double[] { 0, 0, 0, 0 };
         // ballLocation[1] = 0;
         currentSpeed = new double[] { -7, 5 }; //-5,3
 
         willBePosition = new double[] { 0, 0 };
         setSpeedIfHit = false;
 
-        sw1 = new StreamWriter(nws1);
-        sw1.AutoFlush = true;
-        sw2 = new StreamWriter(nws2);
-        sw2.AutoFlush = true;
+       // sw1 = new StreamWriter(nws1);
+      //  sw1.AutoFlush = true;
+      //  sw2 = new StreamWriter(nws2);
+     //   sw2.AutoFlush = true;
         waitTimeLoopCount = 0;
         calcPaddle = false;
         startedWaitTime = false;
@@ -444,6 +508,17 @@ private class BallControl
 
         wallHit = false;
 
+         randPellets = new Random();
+         randomGen = new Random();
+        
+        startedGame = false;
+
+        numberOfpellets = 5; // WHERE TO DETERMINE NUMBER OF PELLETS IN GAME
+        initPelletLocation = "";  //  "iniP\\";
+
+         generatedX = new List<int>();
+         generatedY = new List<int>();
+
         //TEMP
         round2 = false;
         lastLocx = 0;
@@ -451,282 +526,72 @@ private class BallControl
 
     }
 
-    public void ballLoop()  //NOTHING IS SENT OUT HERE, JUST CALCULATED
+    public void gameState()  //NOTHING IS SENT OUT HERE, JUST CALCULATED
     {
         while (true)
         {
-            // if (clientData.Count != 0)
-            //{
-            //lock(thisLock)
-            //{
-            if (client1Start && client2Start)
+         
+            if (!startedGame) //(client1Start && client2Start)
             {
-                physTimer.Start();
+                
+                for(int i=0; i < numberOfpellets; ++i)
+                {
+                  pellet p = new pellet();
+                  p.px = NextRanX();//randPellets.Next(-23,23);
+                  p.py = NextRanY();//randPellets.Next(-12, 14);
 
-                //initial ball move 
-                ballLocation[0] = initBallPosX;
-                ballLocation[1] = initBallPosY;
-
-
-
-                // send start game for both clients here
-
-
-                //                     sw2 = new StreamWriter(nws2))
-                //
-                Thread.Sleep(sleepTime);
-                sw1.WriteLine("start\\{0}\\{1}", currentSpeed[0], currentSpeed[1]);
-                sw2.WriteLine("start\\{0}\\{1}", currentSpeed[0], currentSpeed[1]);
-
-
-                client1Start = false;
+                  gamePellets.Add(p);
+                    
+                    string tempstring = string.Format("\\{0}\\{1}",p.px,p.py);
+                    initPelletLocation= String.Concat(initPelletLocation,tempstring); 
+                } 
+               
+                startedGame = true;
+               
+               
+                physTimer.Start();  //??? may not need
 
             }
 
-            if (nextRoundP1 && nextRoundP2)
+            if (physTimer.Elapsed.Milliseconds >= 20) 
             {
-                Thread.Sleep(sleepTime);
-                physTimer.Start();
-                sw1.WriteLine("nextRound\\{0}\\{1}", (currentSpeed[0]), currentSpeed[1]);
-                sw2.WriteLine("nextRound\\{0}\\{1}", (currentSpeed[0]), currentSpeed[1]);
-                nextRoundP1 = false;
-                nextRoundP2 = false;
-                round2 = true;
-            }
+              
 
-
-            if (physTimer.Elapsed.Milliseconds >= 20)  // .Elapsed.Milliseconds
-            {
-                if ((ballLocation[0] - .5 <= pad1[0] + .5) ||
-                    (ballLocation[0] + .5 >= pad2[0] - .5)) //&& !missed
-                {
-                    //to calculate latency, not adjust info. --> (t4-t1/2)  
-
-                    collisionHit = true;
-
-                    if (waitTimeLoopCount == 3)
-                    {
-                        calcPaddle = true;
-                    }
-
-                    waitTimeLoopCount++;
-
-                }
-
-                if ((ballLocation[1] + .5 >= wallBounds[0]) ||
-                            (ballLocation[1] - .5 <= wallBounds[1]))      // && ballLocation[1] - .5 >= wallBounds[1]-.1 
-                {
-
-                    Console.WriteLine("\nHit Top or Bottom (BEFORE)[x,y] " + ballLocation[0] + " , " + ballLocation[1]
-                                        + " WALLpos: " + (wallBounds[0]) + " , " + (wallBounds[1]));
-                    currentSpeed[1] = currentSpeed[1] * -1;
-
-                    if (ballLocation[1] + .5 >= wallBounds[0])
-                    {
-                        ballLocation[1] = wallBounds[0] - .534;
-                        Console.WriteLine("------- MOVED DOWN ------- ");
-                    }
-                    else if (ballLocation[1] - .5 <= wallBounds[1])
-                    {
-                        ballLocation[1] = wallBounds[1] + .534;
-                        Console.WriteLine("------- MOVED UP --------- ");
-
-                    }
-
-                    Console.WriteLine("\nHit Top or Bottom (AFTER)[x,y] " + ballLocation[0] + " , " + ballLocation[1]
-                                            + " Movedpos: " + (wallBounds[0] - .2) + " , " + (wallBounds[1] + .2));
-
-                    wallHit = true;
-                }
-
-
-                if (!collisionHit && !wallHit)
-                {
-                    ballLocation[0] += currentSpeed[0] * physTimer.Elapsed.TotalSeconds; //Milliseconds; 
-                    ballLocation[1] += currentSpeed[1] * physTimer.Elapsed.TotalSeconds; //Milliseconds;
-                    physTimer.Restart();
-
-
-                }
-                else if (collisionHit && waitTimeLoopCount <= 3)
-                {
-                    if (!setSpeedIfHit)
-                    {
-
-                        missSpeed[0] = currentSpeed[0];
-                        missSpeed[1] = currentSpeed[1];
-                        currentSpeed[0] = currentSpeed[0] * -1;
-                        lastLocx = ballLocation[0];
-                        lastLocy = ballLocation[1];
-                        willBePosition[0] = lastLocx;
-                        willBePosition[1] = lastLocy;
-
-                        missPosition[0] = lastLocx;
-                        missPosition[1] = lastLocy;
-
-                        setSpeedIfHit = true;
-                    }
-
-                    //position if hit (reverse direction)
-                    willBePosition[0] += currentSpeed[0] * physTimer.Elapsed.TotalSeconds;
-                    willBePosition[1] += currentSpeed[1] * physTimer.Elapsed.TotalSeconds;
-
-
-                    //position if missed
-                    missPosition[0] += missSpeed[0] * physTimer.Elapsed.TotalSeconds;
-                    missPosition[1] += missSpeed[1] * physTimer.Elapsed.TotalSeconds;
-
-
-                    physTimer.Restart();
-
-                    //collWaitTime.Start();
-                    //startedWaitTime = true;
-                }
-
-                wallHit = false;
-
-                if (calcPaddle)
-                {
-                    // if y-pos of pad is same pos as ball y
-                    //(ballLocation[0] - .5 <= pad1[1] + 2 || ballLocation[0] - .5 <= pad1[1] - 2 ||
-                    //    ballLocation[0] + .5 >= pad2[1] + 2 || ballLocation[0] + .5 <= pad2[1] - 2)
-
-                    //(ballLocation[0] - .5 <= pad1[0] + .5 && (ballLocation[1]+.5 <= pad1[1]+2 && ballLocation[1]+.5 >= pad1[1]-2 ))
-
-                    double topOfBall = (ballLocation[1] + .5);
-                    double bottomOfBall = (ballLocation[1] - .5);
-                    double ballFrontP1 = (ballLocation[0] - .5);
-                    double ballFrontP2 = (ballLocation[0] + .5);
-                    double pad1Front = (pad1[0] + .5);
-                    double pad2Front = (pad2[0] - .5);
-                    double pad1TopRange = (pad1[1] + 2);
-                    double pad1BottomRange = (pad1[1] - 2);
-                    double pad2TopRange = (pad2[1] + 2);
-                    double pad2BottomRange = (pad2[1] - 2);
-                    // Console.WriteLine("calc pad entered ");
-                    //(ballLocation[0]-.5 <= pad1[0]+.5 && ballLocation[0]-.5 >= pad1[0]+.4)
-                    if ((ballFrontP1 <= pad1Front && ((topOfBall <= pad1TopRange && topOfBall >= pad1BottomRange) || (bottomOfBall <= pad1TopRange && bottomOfBall >= pad1BottomRange))) ||
-                        ((ballFrontP2 >= pad2Front) && ((topOfBall <= pad2TopRange && topOfBall >= pad2BottomRange) || (bottomOfBall <= pad2TopRange && bottomOfBall >= pad2BottomRange))))
-                    {
-
-                        Console.WriteLine("\nPadHit!(before) " + ballLocation[0] + " willBePos " + willBePosition[0] + " s " + (currentSpeed[0] * -1)
-                                            + " t " + physTimer.Elapsed.TotalSeconds + " padL: " + pad1[0] + " padR: " + pad2[0]);
-                        //currentSpeed[0] = currentSpeed[0] * -1;
-                        // ballLocation[0] = willBePosition[0]; //currentSpeed[0] * physTimer.Elapsed.TotalSeconds; //Milliseconds; 
-                        // ballLocation[1] = willBePosition[1]; //currentSpeed[1] * physTimer.Elapsed.TotalSeconds; //Milliseconds;
-                        //   physTimer.Restart();
-
-                        if ((ballFrontP1 <= pad1Front && ((topOfBall <= pad1TopRange && topOfBall >= pad1BottomRange) || (bottomOfBall <= pad1TopRange && bottomOfBall >= pad1BottomRange))))
-                        {
-                            ballLocation[0] = pad1Front + .534;
-                            Console.WriteLine("------- MOVED RIGHT --------- ");
-
-
-                        }
-                        else if (((ballFrontP2 >= pad2Front) && ((topOfBall <= pad2TopRange && topOfBall >= pad2BottomRange) || (bottomOfBall <= pad2TopRange && bottomOfBall >= pad2BottomRange))))
-                        {
-                            ballLocation[0] = pad2Front - .534;
-                            Console.WriteLine("------- MOVED LEFT --------- ");
-
-
-                        }
-
-
-
-                        //Console.WriteLine("\nPadHit!(after) " + ballLocation[0] + " t " + physTimer.Elapsed.TotalSeconds);
-                        hitTime = physTimer.Elapsed.TotalSeconds;
-                        sendHit = true;
-
-
-                    }
-                    else
-                    {
-                        // ---------- ORIGINALLY ------------------------------------
-                        ///*
-                        //MISSED.
-                        if (ballLocation[0] - .5 <= pad1[0] + .5)
-                        {
-                            Score[1] += 1;
-                        }
-                        if (ballLocation[0] + .5 >= pad2[0] - .5)
-                        {
-                            Score[0] += 1;
-                        }
-
-                        // when missed send position 
-
-                        ballLocation[0] = initBallPosX;
-                        ballLocation[1] = initBallPosY;
-                        sendScore = true;
-
-                        //Console.WriteLine("\n score is: (p1,p2) " + Score[0] + " TO " + Score[1] + " Time " + physTimer.Elapsed.TotalSeconds);
-                        physTimer.Reset();
-                        //*/
-                        // ---------- ORIGINALLY  END ------------------------------------  
-                        ///*
-                        //double elapseCollWait = collWaitTime.Elapsed.Milliseconds;
-                        //collWaitTime.Reset();
-
-
-                        //ballLocation[0] = missPosition[0]; //+= currentSpeed[0] * (physTimer.Elapsed.TotalSeconds + elapseCollWait); //Milliseconds; 
-                        //ballLocation[1] = missPosition[1]; //+= currentSpeed[1] * (physTimer.Elapsed.TotalSeconds + elapseCollWait); //Milliseconds;
-                        Console.WriteLine("\nMISSED: " + "ball loc " + ballLocation[0] + " missSpeed " + missSpeed[0]);
-                        // missed = true;
-                        //physTimer.Restart();
-                        //*/
-                    }
-
-                    waitTimeLoopCount = 0;
-                    collisionHit = false;
-                    calcPaddle = false;
-                    startedWaitTime = false;
-                    setSpeedIfHit = false;
-                }
-                /*
-                    if (ballLocation[0] + .5 >= goalWall[1]-.5)
-                    {
-                        // score for player 1
-                        // send start
-                        Score[0] += 1;
-
-                        ballLocation[0] = initBallPosX;
-                        ballLocation[1] = initBallPosY;
-                        sendScore = true;
-
-                        Console.WriteLine("\n GOAL LEFT");
-                        missed = false;
-                        physTimer.Reset();
-                        //sw1.WriteLine("reStart\\{0}\\{1}", (currentSpeed[0] * -1), currentSpeed[1]);
-                        //sw2.WriteLine("reStart\\{0}\\{1}", (currentSpeed[0] * -1), currentSpeed[1]);
-
-                    }
-                    else if (ballLocation[0] - .5 <= goalWall[0]+.5)
-                    {
-                        // score for player 2
-                        Score[1] += 1;
-
-                        ballLocation[0] = initBallPosX;
-                        ballLocation[1] = initBallPosY;
-                        sendScore = true;
-                        Console.WriteLine("\n GOAL RIGHT");
-                        missed = false;
-                        physTimer.Reset();
-                        //sw1.WriteLine("reStart\\{0}\\{1}", (currentSpeed[0] * -1), currentSpeed[1]);
-                        //sw2.WriteLine("reStart\\{0}\\{1}", (currentSpeed[0] * -1), currentSpeed[1]);
-                    }
-
-                */
+             
 
             }
-            //}
-
-
-            //}
+            
 
 
         }
 
 
+    }
+
+    public int NextRanX()
+    {
+        int r;
+        do 
+        {
+              r = randomGen.Next(-23, 23);
+        } 
+        while (generatedX.Contains(r));
+                   
+        generatedX.Add(r);
+        return r;
+    }
+
+    public int NextRanY()
+    {
+        int r;
+        do
+        {
+            r = randomGen.Next(-12, 14);
+        }
+        while (generatedY.Contains(r));
+
+        generatedY.Add(r);
+        return r;
     }
 
 }
