@@ -1,4 +1,32 @@
-﻿//SWARCH
+﻿/* Things to do
+ * 
+ * Multiuser. The goal of this phase of the project is to coordinate the game 
+between 2 or more game clients. Your game should have player collision 
+detection, ensure that players win/lose when appropriate, prevent 
+inconsistencies (clients reaching the same pallet at the same time), and avoid the 
+bugs that you studied in Milestone 1.
+ * 
+ * More and better. The goal of this phase of the project is to make your multiuser 
+game more solid and demoable to outsiders. Here is the list of things you need 
+to do in this last phase: 
+(a) If there were network-related bugs in M4, you need to fix them. 
+(b) Add a score board that shows the clients currently connected along with 
+their scores. The score is computed as follows: 
+Get a pallet: +1 point 
+Get another player: +10 points 
+(c) Detect client disconnections, and update the score board accordingly 
+(i.e. delete that user from the score board) 
+ Parts to be done:
+ * Collision detection (Collision with wall handled on client side, the rest on server)
+ * Win/lose condition (implement scores/points for pellet and players, implement scoreboard if extra time)
+ * Client prediction if necessary
+ * TIME WARPP
+ * Disconnections
+*/
+
+
+
+//SWARCH
 
 
 using UnityEngine;
