@@ -281,7 +281,7 @@ private class processGame
         while (clientsEntered.Count != 0)
         {
             gameData gd1;
-
+            
             for (int i = 0; i < clientsEntered.Count; ++i)
             {
                 Client tempClient = clientsEntered[i];
