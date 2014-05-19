@@ -58,17 +58,7 @@ public class Player : MonoBehaviour
 		input = Input.GetAxis( "Vertical" );
 		input2 = Input.GetAxis("Horizontal");	
 	    pos.z += input * MoveSpeed * Time.deltaTime;
-		pos.x += input2 *MoveSpeed * Time.deltaTime;
-
-        Debug.Log("Z: " + pos.z + "  X: " + pos.x);
-
-
-        if (pos.z - initialZ > 0)
-        {
-        }
-      
-	    
-        
+		pos.x += input2 *MoveSpeed * Time.deltaTime;      
 
 		this.transform.position = pos;
 		scoreDisplay.transform.position = pos;
@@ -173,6 +163,12 @@ public class Player : MonoBehaviour
 		resetting = false;
 	}
 
+    IEnumerator sendPosition()
+    {
+        gp.returnSocket().SendTCPPacket("move\\{0}\\{1}\\{2}");
+        yield return new WaitForSeconds(.2f);
+ 
+    }
  }
 
 

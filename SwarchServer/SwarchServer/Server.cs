@@ -330,7 +330,7 @@ private class processGame
                                                             string.Format("\\{0}\\{1}\\{2}", gd1.movement1, gd1.movement2, clientsEntered[i].clientNumber)); //tempClient.clientNumber));
                                 break;
                             }
-
+                            //  move\\gameobject.x\\gameobject.z\\1
 
                         case "userAndPass":
                             {
@@ -611,7 +611,7 @@ private class ThreadSock
                 gamedata.password = data[2];
                 
             }
-            if(data[0] == "hit")
+            if(data[0] == "hit" || data[0] == "move" )
             {
                 gamedata.action = data[0];
                 gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
@@ -620,7 +620,6 @@ private class ThreadSock
                 //gamedata.timeStamp = Convert.ToDateTime(data[4]);
                 
             }
-            
 
             lock (thisLock)
             {
