@@ -39,7 +39,8 @@ namespace SwarchServer
         protected static double[] currentSpeed;
         protected static double initBallPosX;
         protected static double initBallPosY;
-
+        protected static int growSize;
+        protected static double moveSpeed;
 
         protected static gameData p1CollisionCompare;
         protected static gameData p2CollisionCompare;
@@ -60,24 +61,36 @@ namespace SwarchServer
         protected static double[] goalWall;
       
         protected static bool startedProcess;
-
+        
         protected static List<Client> clientsEntered = new List<Client>();
         protected static DatabaseManager db = new DatabaseManager();
         protected static bool passwordAcepted;
-        protected static string initPelletLocation;
-        protected static List<playing> clientsPlaying = new List<playing>();
+        //protected static List<pellet>  = new List<pellet>();
+        protected static string addedNewPellets; 
+       
+        protected static List<playInfo> compareGamePlay = new List<playInfo>();
 
-        protected struct playing
+
+        protected static Stopwatch uniClock = new Stopwatch();
+        protected static DateTime dt = new DateTime();
+
+     ///*  
+       protected struct playInfo
         {
-           public int clientNumber;
-           public bool isPlaying;
+           public int objectNum;
+           public int clientsNum;
+           public double compareX;
+           public double compareY;
+           public DateTime timeStamp;
+           
         }
-
-        protected struct pellet
+     //*/
+        protected class pellet
         {
+            public int pellNum;
             public int px;
             public int py;
-
+            public int clientPell;
         }
 
         protected static List<pellet> gamePellets = new List<pellet>();
@@ -87,7 +100,8 @@ namespace SwarchServer
         {
             public string userName;
             public string password;
-           
+
+            public int clientNum;
             public string action;
             public double posX;
             public double posY;
@@ -99,7 +113,7 @@ namespace SwarchServer
 
         // used to store client communication for thread 
         // and reading and writing 
-        protected struct Client
+        protected class Client
         {
             // clientTCP - client connection
             public TcpClient TCPclient;
@@ -116,9 +130,12 @@ namespace SwarchServer
             // clientNumber
             public int clientNumber;
 
-           // public bool connected = false;
+            public double posX;
 
-            //public bool clientpasswordAcepted = false;
+            public double posY;
+
+            public int playerSize;
+            public double playerSpeed;
         }
 
         //protected static List<gameData> clientData = new List<gameData>(); // array of sturct for each client info
@@ -128,7 +145,8 @@ namespace SwarchServer
             //this.tcpListener = new TcpListener(IPAddress.Any, 4040);
             Socket sock = new Socket();
             sock.startSock();
-            
+
+            dt = NTPTime.getNTPTime(ref uniClock);
         }
 
 // THREAD ESTABLISH CONNECTIONS =======================================================================================
@@ -143,7 +161,7 @@ private class Socket
     Thread stateThread;
     Thread processGameThread;
     bool gameStarted;
-
+    bool startedGameState;
     
     Object thisLock = new Object();
     public DateTime p1T2;
@@ -167,18 +185,8 @@ private class Socket
         p1T2 = new DateTime();
         p2T2 = new DateTime();
         startedProcess = false;
-
-        for(int i=0; i<4; ++i)  // 4 -- number of player allowable pergame
-        {
-            playing tempP;
-            tempP.clientNumber = i+1;
-            tempP.isPlaying = false;
-
-            clientsPlaying.Add(tempP);
-        
-        }
-
-     
+        startedGameState = false;
+  
 
     }
     public void startSock()
@@ -228,7 +236,8 @@ private class Socket
                 tempClient.sw = sw1;
                 tempClient.sw.AutoFlush = true;
 
-                tempClient.clientNumber = clientsConnected;
+                tempClient.playerSize = 2;
+                tempClient.playerSpeed = 10;//moveSpeed;
                 
             // array that holds clients to be used globally 
             clientsEntered.Add(tempClient);
@@ -238,12 +247,16 @@ private class Socket
                 
 
             //===========================================================
+            if(!startedGameState)
+            {
             ClientGameState gs = new ClientGameState();
 
                 stateThread = new Thread(
                         new ThreadStart(gs.gameState));
 
                 stateThread.Start();
+                startedGameState = true;
+            }
            //===========================================================
 
                 
@@ -268,11 +281,24 @@ private class processGame
 {
 
     Object thisLock = new Object();
+    public bool addAfterStart;
+    public int currentNumPlayers;
 
+    public string clientsConnectedInfo;
+    public string newClientsInfo;
+    public int numClientsPass;
+    public string currentClientsMove;
+
+    List<int> newClientaddedNum = new List<int>();
 
   public processGame()
   {
-      
+      addAfterStart = false;
+      currentNumPlayers = 0;
+      clientsConnectedInfo = ""; //new List<int>();
+      newClientsInfo = "";
+      numClientsPass=0;
+      currentClientsMove = "";
 
   }
 
@@ -284,18 +310,28 @@ private class processGame
             
             for (int i = 0; i < clientsEntered.Count; ++i)
             {
-                Client tempClient = clientsEntered[i];
+               // Client tempClient = clientsEntered[i];
 
-                if (tempClient.clientQueue != null && tempClient.clientQueue.Count != 0)
+                if (clientsEntered[i].clientQueue !=null && clientsEntered[i].clientQueue.Count!=0) //(tempClient.clientQueue != null && tempClient.clientQueue.Count != 0)
                 {
                     lock (thisLock)
                     {
 
-                        gd1 = (gameData)tempClient.clientQueue.Dequeue();
+                        gd1 = (gameData)clientsEntered[i].clientQueue.Dequeue();//(gameData)tempClient.clientQueue.Dequeue();
                     }
 
                     switch (gd1.action)
                     {
+                        case "move":
+                            {
+                                 //*** MAKE SURE MOVEMENTS ARE SENT NO BIGGER THEN SIZE OF PELLET
+
+                                currentClientsMove = string.Concat(currentClientsMove,
+                                                            string.Format("\\{0}\\{1}\\{2}", gd1.movement1, gd1.movement2, clientsEntered[i].clientNumber)); //tempClient.clientNumber));
+                                break;
+                            }
+
+
                         case "userAndPass":
                             {
                                 // enter database
@@ -307,39 +343,110 @@ private class processGame
                                     //tempClient.sw.WriteLine("correctUserPass");
                                    // passwordAcepted = true;
                                    // tempClient.clientpasswordAcepted = true;
-                                   
+                                    numClientsPass += 1;
+                                    Console.WriteLine("\n--- NUM OF CLIENTS SUCCESSFULLY LOGGED IN {0} ", numClientsPass );
+
                                     bool found= false;
 
-                                    for (int j = 0; j < clientsPlaying.Count && !found; ++j )
-                                    {
-                                        playing play = clientsPlaying[j];
-
-                                        if (!play.isPlaying)
+                                        for(int j = 0; j< clientsEntered.Count && !found; ++j)
                                         {
-                                            tempClient.clientNumber = play.clientNumber;
-                                            play.isPlaying = true;
+                                          //Client tClient = clientsEntered.Find(x => x.clientNumber == j+1);
 
-                                            clientsPlaying[j] = play;
-                                            clientsEntered[i] = tempClient;
-
-                                            found = true;
+                                            if (!clientsEntered.Exists(x => x.clientNumber == j + 1))   //(tClient.clientNumber == 0) 
+                                            {
+                                                clientsEntered[i].clientNumber = j + 1; //tempClient.clientNumber = j+1;
+                                               found = true;
+                                            }
                                         }
+
+                                        
+
+                                    int initialX =0;
+                                    int initialY=0;
+
+                                    switch(clientsEntered[i].clientNumber)//(tempClient.clientNumber)
+                                    {
+                                        case 1:
+                                            {
+                                                initialX = -17;
+                                                initialY = 7;
+                                               break;
+                                            }
+                                        case 2:
+                                            {
+                                                initialX = 20;
+                                                initialY = 7;
+                                                break;
+                                            }
+
+                                        case 3:
+                                            {
+                                                initialX = 20;
+                                                initialY = -10;
+                                                break;
+                                            }
+                                        default:
+                                            break;
                                     }
-                                     
-                                   // string stringTemp = String.Format("clientNumber\\{0}", tempClient.clientNumber);
 
-                                    tempClient.sw.WriteLine(string.Concat(String.Format("clientNumber\\{0}", tempClient.clientNumber), initPelletLocation));
+                                    clientsEntered[i].posX = initialX; //tempClient.posX = initialX;
+                                    clientsEntered[i].posY = initialY; //tempClient.posY = initialY;
+                                       
+                                            //clientsEntered[i] = tempClient;
+                                        
+                                    string pellLoc ="";
+                                    pellet tempP ; 
+                                    for(int k=0; k < gamePellets.Count; ++k)
+                                    {
+                                      tempP = gamePellets[k];
 
-                                    //tempClient.sw.WriteLine(initPelletLocation);
+                                      pellLoc = string.Concat(pellLoc, string.Format("\\{0}\\{1}", tempP.px, tempP.py));
+                                    }
+
+                                    //tempClient
+                                    clientsEntered[i].sw.WriteLine(string.Concat(
+                                        String.Format("clientNumber\\{0}\\{1}\\{2}", clientsEntered[i].clientNumber, initialX, initialY), pellLoc));  // initPelletLocation
+                                                                                   //tempClient
+
+                                    clientsConnectedInfo = string.Concat(clientsConnectedInfo,
+                                        string.Format("\\{0}\\{1}\\{2}", initialX, initialY, clientsEntered[i].clientNumber));
+                                                                                         //tempClient                    
+                                                    
+                                    if (addAfterStart)
+                                    {
+                                        newClientsInfo = string.Concat(newClientsInfo,
+                                              string.Format("\\{0}\\{1}\\{2}", initialX, initialY, clientsEntered[i].clientNumber));
+                                                                                                //tempClient
+                                                              //tempClient
+                                        newClientaddedNum.Add(clientsEntered[i].clientNumber);
+                                    }
+
+
                                 }
                                 else
-                                {
-                                    tempClient.sw.WriteLine("incorrectUserPass");
-                                    //sw2.WriteLine("pad\\{0}", gd1.movement1);
+                                {//tempClient
+                                    clientsEntered[i].sw.WriteLine("incorrectUserPass");
+                                    
                                 }
                                 
                                 break;
                             }
+                        case "hit":
+                            {
+                               playInfo tempPlayInfo = new playInfo();
+
+                               tempPlayInfo.objectNum = gd1.clientNum;
+                               tempPlayInfo.compareX = gd1.posX;
+                               tempPlayInfo.compareY = gd1.posY;
+                               tempPlayInfo.timeStamp = gd1.timeStamp;
+                               tempPlayInfo.clientsNum = clientsEntered[i].clientNumber;
+                                                       //tempClient
+
+                               compareGamePlay.Add(tempPlayInfo); //.Insert(tempClient.clientNumber, tempPlayInfo);
+                               
+                                break;
+                            }
+
 
                         default:
                             break;
@@ -347,15 +454,82 @@ private class processGame
                     }
                 }
 
-                //if(tempClient.clientpasswordAcepted)
-                //{
-               //     tempClient.sw.WriteLine(initPelletLocation);
-               // }
-
-
             }
 
-          
+////////////// -- PLACE TO BROADCAST TO ALL PLAYERS -- ///////////////////////////////////////////////////////////////
+
+            if (numClientsPass > 1 &&  numClientsPass > currentNumPlayers ) //&& !sentStartGame
+            {
+
+
+                if (addAfterStart)
+                {
+                    // TESTING (since still don't have movement sent over):
+                    // currentClientsMove = ""
+
+                    for (int l = 0; l < clientsEntered.Count; ++l)
+                    {
+                        //Client tC = clientsEntered[l];
+
+                        if ((newClientaddedNum.Find(x => x == clientsEntered[l].clientNumber)) != 0 )
+                        {
+                            // clients who just joined (could optimize by somehow getting most recent movements before )
+                            //tC
+                            clientsEntered[l].sw.WriteLine("startInitalGame{0}", clientsConnectedInfo);
+                        }
+                        else
+                        {
+                            //clients who already playing
+                                           //           // , numClientsPass
+                            //tC
+                            clientsEntered[l].sw.WriteLine("newEntry{0}", newClientsInfo);
+                        }
+                    }
+                    newClientaddedNum.Clear();
+                    newClientsInfo = "";
+                }
+                else
+                {
+                    for (int l = 0; l < clientsEntered.Count; ++l)
+                    {
+                        //Client tC = clientsEntered[l];
+                            //tC
+                        if (clientsEntered[l].clientNumber != 0) 
+                        {  // tC                                      //,numClientsPass
+                            clientsEntered[l].sw.WriteLine("startInitalGame{0}", clientsConnectedInfo);
+                        }
+                    }
+                     addAfterStart = true;
+                }
+
+              
+                currentNumPlayers = numClientsPass;
+            }
+
+            if (currentClientsMove != "")
+            {
+                // send everyone all movements logged in currentClientsMove 
+                
+                
+                currentClientsMove = "";
+            }
+
+            if (addedNewPellets != "")
+            {
+              for (int l = 0; l < clientsEntered.Count; ++l)
+              {
+                 
+                  clientsEntered[l].sw.WriteLine("newPell{0}", addedNewPellets);
+                  
+              }
+              addedNewPellets = "";
+            }
+
+
+            //newClientaddedNum.Clear();
+            //currentClientsMove = "";
+            //newClientsInfo = "";
+            
         }
     }
 }
@@ -388,17 +562,20 @@ private class ThreadSock
         //int bytesRead;
         string readData;
         Object thisLock = new Object();
-        Client tempClient= new Client();
-        int clientIndex = -9;
+       // Client tempClient= new Client();
+        //int clientIndex = -9;
+        int cliIndex = -999;
 
         lock (thisLock)
         {
-          tempClient = clientsEntered.Find(x => x.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint);
-          clientIndex = clientsEntered.IndexOf(tempClient);
+         // tempClient = clientsEntered.Find(x => x.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint);
+         // clientIndex = clientsEntered.IndexOf(tempClient);
+
+             cliIndex = clientsEntered.FindIndex(x => x.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint);
         }
 
-        tempClient.clientQueue = new Queue(); 
-            
+       // tempClient.clientQueue = new Queue(); 
+        clientsEntered[cliIndex].clientQueue = new Queue();    
 
         while (true)
         {
@@ -434,11 +611,24 @@ private class ThreadSock
                 gamedata.password = data[2];
                 
             }
+            if(data[0] == "hit")
+            {
+                gamedata.action = data[0];
+                gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                gamedata.posX = Convert.ToDouble(data[2]);
+                gamedata.posY = Convert.ToDouble(data[3]);
+                //gamedata.timeStamp = Convert.ToDateTime(data[4]);
+                
+            }
+            
 
             lock (thisLock)
             {
-                tempClient.clientQueue.Enqueue(gamedata);
-                clientsEntered[clientIndex] = tempClient;
+                //tempClient.clientQueue.Enqueue(gamedata);
+                //clientsEntered[clientIndex] = tempClient;
+
+                clientsEntered[cliIndex].clientQueue.Enqueue(gamedata);
+                
             }
 
             
@@ -473,6 +663,10 @@ private class ClientGameState
     public Random randPellets;
     bool startedGame;
     int numberOfpellets;
+
+    public int lastProcessRange;
+
+    List<playInfo> resolvedPellets;
 
     public Random randomGen;
     List<int> generatedX;
@@ -514,15 +708,26 @@ private class ClientGameState
         startedGame = false;
 
         numberOfpellets = 5; // WHERE TO DETERMINE NUMBER OF PELLETS IN GAME
-        initPelletLocation = "";  //  "iniP\\";
+        //initPelletLocation = "";  //  "iniP\\";
+        addedNewPellets = "";
 
          generatedX = new List<int>();
          generatedY = new List<int>();
+         resolvedPellets = new List<playInfo>();
+
+         growSize = 1;
+         moveSpeed = 10;
+
+         lastProcessRange = 0;
 
         //TEMP
         round2 = false;
         lastLocx = 0;
         lastLocy = 0;
+
+        
+        
+        //  player 1 x = -17, y = 7;
 
     }
 
@@ -539,25 +744,118 @@ private class ClientGameState
                   pellet p = new pellet();
                   p.px = NextRanX();//randPellets.Next(-23,23);
                   p.py = NextRanY();//randPellets.Next(-12, 14);
+                  p.pellNum = i + 1;
 
                   gamePellets.Add(p);
                     
-                    string tempstring = string.Format("\\{0}\\{1}",p.px,p.py);
-                    initPelletLocation= String.Concat(initPelletLocation,tempstring); 
+                   // string tempstring = string.Format("\\{0}\\{1}",p.px,p.py);
+                   // initPelletLocation= String.Concat(initPelletLocation,tempstring); 
                 } 
                
                 startedGame = true;
                
                
-                physTimer.Start();  //??? may not need
+                physTimer.Start(); 
 
             }
 
             if (physTimer.Elapsed.Milliseconds >= 20) 
             {
-              
 
-             
+                if (compareGamePlay.Count != 0)
+                {
+
+                    //IEnumerable
+                  
+                //  List<playInfo> orderTempList = (List<playInfo>)compareGamePlay.OrderBy(x => x.timeStamp.Millisecond);
+                    
+                    // if ((newClientaddedNum.Find(x => x == clientsEntered[l].clientNumber)) != 0 )
+
+                        
+                        //List<playInfo> tempList = compareGamePlay.FindAll((x => x.objectNum == i+1) );
+
+                     
+                       // ?? wait to see if another "hit" is on it's way.
+                      for (int i = 0; i < compareGamePlay.Count; ++i)
+                      { 
+                                                                                //orderTempList[i]
+                         //Client c =  clientsEntered.Find(x => x.clientNumber == compareGamePlay[i].clientsNum);  
+
+                          int indexC = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
+
+                          //c
+                          if (clientsEntered[indexC].clientNumber != 0)
+                          {
+                                                               //orderTempList[i] <--> all compareGamePlay[i]
+                            //c <--> clientsEntered[indexC]
+                              if ((clientsEntered[indexC].posX + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareX - .5) || (clientsEntered[indexC].posX - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareX + .5)
+                                || (clientsEntered[indexC].posY + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareY - .5) || (clientsEntered[indexC].posY - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareY + .5)
+                                && !resolvedPellets.Exists(x => (x.objectNum == compareGamePlay[i].objectNum) 
+                                    && (x.compareX == compareGamePlay[i].compareX) && (x.compareY == compareGamePlay[i].compareY)))
+                              {
+                                  double speedChange = (clientsEntered[indexC].playerSpeed - 2);
+
+                                  if (speedChange < 1)
+                                  {
+                                      clientsEntered[indexC].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                  }
+                                  else
+                                  {
+                                      clientsEntered[indexC].playerSpeed = speedChange;
+                                  }
+
+                                 // clientsEntered[indexC].sw.WriteLine("getPell\\{0}\\{1}", (clientsEntered[indexC].playerSize + growSize), clientsEntered[indexC].playerSpeed);
+                                      //, (((dt.AddMinutes(uniClock.Elapsed.Minutes).AddSeconds(uniClock.Elapsed.Seconds).AddMilliseconds(uniClock.Elapsed.Milliseconds)).Ticks))
+
+
+                                  clientsEntered[indexC].playerSize = clientsEntered[indexC].playerSize + growSize;
+                                                                                    //orderTempList[i]
+                                  //pellet tempPel = gamePellets.Find(x => x.pellNum == compareGamePlay[i].objectNum);
+                                  //int indexPel = gamePellets.IndexOf(tempPel);
+
+                                int indPell = gamePellets.FindIndex(x => x.pellNum == compareGamePlay[i].objectNum);
+                                  
+                                  //tempPel
+                                gamePellets[indPell].px = NextRanX();
+                                gamePellets[indPell].py = NextRanY();
+                                                   //orderTempList
+                               // gamePellets[indPell].pellNum = compareGamePlay[i].objectNum;
+                                  //gamePellets[indexPel] = tempPel;
+
+                                 // int clientIndex = clientsEntered.IndexOf(c);
+                                  //clientsEntered[clientIndex] = c;
+
+                                lock(thisLock)
+                                {
+                                  addedNewPellets = string.Concat(addedNewPellets, string.Format("\\{0}\\{1}\\{2}\\{3}\\{3}\\{5}",
+                                    clientsEntered[indexC].clientNumber, (clientsEntered[indexC].playerSize),  clientsEntered[indexC].playerSpeed,
+                                    gamePellets[indPell].pellNum, gamePellets[indPell].px, gamePellets[indPell].py));
+                                                        
+                                }  
+                                  playInfo addToResolve = new playInfo();
+                                  addToResolve.objectNum = compareGamePlay[i].objectNum;
+                                  addToResolve.compareX = compareGamePlay[i].compareX;
+                                  addToResolve.compareY = compareGamePlay[i].compareY;
+                                                        //orderTempList[i]
+                                  resolvedPellets.Add(addToResolve);
+
+                              }
+                              else
+                              {
+                                 // clientsEntered[indexC].sw.WriteLine("missPell"); //+ "\\"
+                                      //+ (((dt.AddMinutes(uniClock.Elapsed.Minutes).AddSeconds(uniClock.Elapsed.Seconds).AddMilliseconds(uniClock.Elapsed.Milliseconds)).Ticks)) );
+                              }
+                          }
+
+
+                          lastProcessRange = compareGamePlay.Count;
+                      }
+                      compareGamePlay.RemoveRange(0, lastProcessRange);
+                      
+
+                }
+                    resolvedPellets.Clear();
 
             }
             

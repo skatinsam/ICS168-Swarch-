@@ -1,32 +1,4 @@
-﻿/* Things to do
- * 
- * Multiuser. The goal of this phase of the project is to coordinate the game 
-between 2 or more game clients. Your game should have player collision 
-detection, ensure that players win/lose when appropriate, prevent 
-inconsistencies (clients reaching the same pallet at the same time), and avoid the 
-bugs that you studied in Milestone 1.
- * 
- * More and better. The goal of this phase of the project is to make your multiuser 
-game more solid and demoable to outsiders. Here is the list of things you need 
-to do in this last phase: 
-(a) If there were network-related bugs in M4, you need to fix them. 
-(b) Add a score board that shows the clients currently connected along with 
-their scores. The score is computed as follows: 
-Get a pallet: +1 point 
-Get another player: +10 points 
-(c) Detect client disconnections, and update the score board accordingly 
-(i.e. delete that user from the score board) 
- Parts to be done:
- * Collision detection (Collision with wall handled on client side, the rest on server)
- * Win/lose condition (implement scores/points for pellet and players, implement scoreboard if extra time)
- * Client prediction if necessary
- * TIME WARPP
- * Disconnections
-*/
-
-
-
-//SWARCH
+﻿//SWARCH
 
 
 using UnityEngine;
@@ -34,17 +6,21 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
-public class GameProcess : MonoBehaviour {
+public class GameProcess : MonoBehaviour 
+{
 	
 	//PUBLIC MEMBERS
-	public int clientNumber;
+	//public int clientNumber;
 
-	public bool startGame;
+	public bool startedGame;
 	public bool startNextRound;
 	public bool hitGoal;
 	public int winningMove ;
-	
+
+	public int mainPlayerNumber;
+
 	private Sockets socks;
 	
 	private byte byteBuffer;
@@ -54,7 +30,10 @@ public class GameProcess : MonoBehaviour {
 	public char delemeter;
 
 	public Transform pell;
-	public ArrayList pellets;
+	public Transform opponents;
+
+	//public ArrayList 
+	public List<Pellets> pellets;
 	public List<float> pelletsLocation;
 	public int numOfPlayer;
 	public DateTime t1; 
@@ -63,23 +42,36 @@ public class GameProcess : MonoBehaviour {
 	public bool canSendStart;
 	public double totalLat;
 
+	public Player player;
+	public Vector3 initPlayerPos;
+
+	public Stopwatch uniClock; // = new Stopwatch();
+	public DateTime dt; // = new DateTime();
+	
+	//public int startOpponents;
+
+	public string[] initOpponentData;
+
+	public GUIText guiTGP;
+
 	public bool loadPellets;
 
 	void Start () 
 	{
 		socks = new Sockets();
 
-		pellets = new ArrayList();
+		pellets = new List<Pellets>();//new ArrayList();
 		pelletsLocation = new List<float>();
 		data = "";
 		loadPellets = false;
 		 
+		mainPlayerNumber= 0;
 
-		startGame = false;
+		startedGame = false;
 		startNextRound = false;
 		hitGoal = false;
 		splitData = new string[]{"",""};
-
+		initOpponentData = new string[]{"",""};
 		delemeter = ('\\');
 		
 		winningMove = 0;
@@ -89,14 +81,22 @@ public class GameProcess : MonoBehaviour {
 		canSendStart = false;
 		totalLat = 0;
 
-		
+		Stopwatch uniClock = new Stopwatch();
+		DateTime dt = new DateTime();
+
+		//dt = SwarchServer.NTPTime.getNTPTime(ref uniClock);
+
+		//player = GameObject.Find("Player").GetComponent<Player>();
+
+		//player.playerNum = mainPlayerNumber;
+
+
 	}
 
 	void OnGUI()
 	{
 		if ( GUI.Button( new Rect( 0, 50, 100, 20), "Disconnect"))
 		{
-			
 			socks.endThread();
 			socks.Disconnect();
 			print("\nDISCONNECTED ");
@@ -109,52 +109,177 @@ public class GameProcess : MonoBehaviour {
 
 	  if(loadPellets)
 	  {
+			//dt = SwarchServer.NTPTime.getNTPTime(ref uniClock);
+
+			player = GameObject.Find("Player").GetComponent<Player>();
+
+			player.pos = initPlayerPos;
+			player.playerNum = mainPlayerNumber;
+
+			guiTGP.text = "";
+
+			//int startNumOpponents = Convert.ToInt32( initOpponentData[1]);
+
+			for(int k=1; k < initOpponentData.Length; k = k+3)
+			{
+
+				if(Convert.ToInt32(initOpponentData[k+2]) != player.playerNum)
+				{
+					
+					Transform tempOpponents = Instantiate(opponents, new Vector3(float.Parse(initOpponentData[k]), 
+					                                   0, float.Parse(initOpponentData[k+1])), Quaternion.identity) as Transform;
+
+
+					opponent opp =	(opponent)tempOpponents.GetComponent("opponent");
+					opp.pos = new Vector3(float.Parse(initOpponentData[k]), 0, float.Parse(initOpponentData[k+1]));
+					opp.name = "opponent"+initOpponentData[k+2];
+					
+					opp.opponentNum = Convert.ToInt32(initOpponentData[k+2]);
+
+				}
+
+			}
+			int n = 1;
 		for(int i =0; i < 10; i = i+2)
 		{
-			
-
-			//Transform tempPell = Instantiate(pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
-			//                                                   0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
-
-			
 
 				Transform tempPell = Instantiate(pell, new Vector3(pelletsLocation[i], 
 				                        0,  pelletsLocation[i+1]), Quaternion.identity) as Transform;
 
-			pellets.Add(tempPell ); 
-			
+				Pellets tempP = (Pellets)tempPell.GetComponent("Pellets"); 
 
-			
+				tempP.pellNumber = (n);
+				tempP.name = "pellet"+n;
+
+			pellets.Add(tempP ); 
+			++n;
 		}
 			loadPellets = false;    
 	  }
 		
 	
-		if(socks.recvBuffer.Count > 0)
+	 if(startedGame)
+	 {
+		if(socks.recvBuffer.Count > 0 )
 		{
-
 			
+			data = (string)socks.recvBuffer.Dequeue();
+
 			splitData = data.Split(delemeter);
-			
-			if(splitData[0] == "canSendStart")
+		
+			if(splitData[0] == "newEntry")
 			{
-				canSendStart = true;
-			}
-			
-			if(splitData[0] == "playNum")
-			{
-				//setPlayerPaddle(Convert.ToInt32(splitData[1]));
-			}
-			
-			if(splitData[0] == "start") 
-			{
-				startGame = true;
+				//print ("GOT INTO NEWENTRY _-_-_-_");  
+				for(int k=1; k < splitData.Length; k = k+3)
+				{
+					
+					//if(Convert.ToInt32(splitData[k+2]) != player.playerNum)
+					//{
+						
+						Transform tempOpponents = Instantiate(opponents, new Vector3(float.Parse(splitData[k]), 
+						                                                             0, float.Parse(splitData[k+1])), Quaternion.identity) as Transform;
+						
+						
+						opponent opp =	(opponent)tempOpponents.GetComponent("opponent");
+						opp.pos = new Vector3(float.Parse(splitData[k]), 0, float.Parse(splitData[k+1]));
+						opp.name = "opponent"+splitData[k+2];
+						
+						opp.opponentNum = Convert.ToInt32(splitData[k+2]);
+						
+					//}
+					
+				}
 
+			}
+			else if(splitData[0] == "getPell")
+			{
+				// splitData[1] -- timeStamp
+		      /*
+				player.MoveSpeed = float.Parse( splitData[2]);
+
+
+
+					//score += growSize;
+
+
+					player.transform.localScale = new Vector3(Convert.ToInt32(splitData[1]),
+					                                        player.transform.localScale.y,
+					                                          Convert.ToInt32(splitData[1]));
+
+              */
+			}
+			else if(splitData[0] == "newPell")
+			{
+					print ("GOT INTO NEWpELL _-_-_-_");
+			  for(int r = 1; r< splitData.Length;  r=r+6)
+		      {
+				    if(Convert.ToInt32(splitData[r]) == player.playerNum)
+					{
+						player.MoveSpeed = float.Parse( splitData[r+2]);
+						//score += growSize;
+
+						player.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+1]),
+						                                          player.transform.localScale.y,
+						                                          Convert.ToInt32(splitData[r+1]));
+					}
+					else
+					{
+							opponent tempClient = GameObject.Find("opponent"+splitData[r]).GetComponent<opponent>();
+						
+						tempClient.MoveSpeed = float.Parse( splitData[r+2]);
+
+						tempClient.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+1]),
+						                                          tempClient.transform.localScale.y,
+						                                          Convert.ToInt32(splitData[r+1]));
+
+
+					}
+
+					  
+				  //for(int i =1; i < splitData.Length; i = i+3)
+				  //{
+						if(pellets.Exists(x=>x.pellNumber == Convert.ToInt32(splitData[r+3])))
+						{
+							print ("\nSAME PELLET DOES EXIST ::"+ splitData[r+3]);
+						   ///*
+							int tempPellLoc1 = pellets.FindIndex(x=> x.pellNumber == Convert.ToInt32(splitData[r+4]));
+							
+							pellets.RemoveAt(tempPellLoc1);
+
+							GameObject oldPell = GameObject.Find("pellet"+splitData[r+4]);
+
+							Destroy(oldPell);
+                          //*/
+						}
+					
+						Transform tempPell = Instantiate(pell, new Vector3(float.Parse(splitData[r+4]), 
+						                                                   0,  float.Parse(splitData[r+5])), Quaternion.identity) as Transform;
+					
+					  Pellets tempP = (Pellets)tempPell.GetComponent("Pellets"); 
+					
+						tempP.pellNumber = Convert.ToInt32(splitData[r+3]);
+						tempP.name = "pellet"+splitData[r+3];
+
+						//int tempPellLoc = pellets.FindIndex(x=>x.pellNumber == Convert.ToInt32(splitData[r+3]));
+
+						//print ("tempPellLoc " );
+						pellets.Add(tempP ); 
+					
+				  //}  
+			  }
+
+			}
+			//else if(splitData[0] == "missPell")
+			//{
+			   
 				
-			}
+			//}
 
-			
+
+
 		}
+	 }
+		
 	}
 	public Sockets returnSocket()
 	{

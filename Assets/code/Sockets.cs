@@ -10,11 +10,11 @@ using System.Diagnostics;
 using System.Threading;
 
 public class Sockets : MonoBehaviour {
+	
+	
 
 
-
-
-    const string SERVER_LOCATION = "128.195.51.248";  //<-- **** CHANGE for every connection to internet 
+	const string SERVER_LOCATION = "128.195.71.124";  //<-- **** CHANGE for every connection to internet 
 	
 	const int SERVER_PORT = 4040; //YOUR PORT NUMBER; //FILL THESE OUT FOR YOUR OWN SERVER
 	

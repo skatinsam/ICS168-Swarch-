@@ -7,7 +7,7 @@ public class Player : MonoBehaviour
 	// how fast the paddle can move
 	public float MoveSpeed;
 	
-	//public int playerNum;
+	public int playerNum;
 	
 	public int growSize = 2;
 	public int score = 0;
@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
 	// whether this paddle can accept player input
 	public bool AcceptsInput = true;
 
-	private GameProcess gp; //= GameObject.Find("GameProcess").GetComponent<GameProcess>(); 
+	private GameProcess gp; 
 
 	float input; 
 	float input2;
@@ -33,9 +33,10 @@ public class Player : MonoBehaviour
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>(); 
 
 		scoreDisplay.transform.position = this.transform.position;
-		//p = GameObject.Find("Player");
+
 
 		MoveSpeed = 10f;
+		playerNum = 0;
 
 	}
 	
@@ -83,7 +84,9 @@ public class Player : MonoBehaviour
 			print ("\n\nHIT WALL");
 
 			GameObject p = GameObject.Find("Player");
-			pos =  Vector3.zero;
+
+
+			pos =  Vector3.zero; // notify the server ??
 
 			this.transform.localScale = new Vector3(2,2,2);
 			score = 0;
@@ -91,20 +94,38 @@ public class Player : MonoBehaviour
 		}
 		if(c.tag == "Pellet")
 		{
-			print("size of pellet array(BEFORE): " +gp.pellets.Count + " c NAME: " + c.gameObject.name);
-			gp.pellets.RemoveAt(0); //(Convert.ToInt32(c.gameObject.name));
+			float pellX = c.transform.position.x;
+			float pellZ = c.transform.position.z;
+			Pellets tempPell = (Pellets)c.GetComponent("Pellets");
+
+			 
+			gp.returnSocket().sendQueue.Enqueue("hit\\"+ tempPell.pellNumber + "\\" +pellX +"\\"+ pellZ); //+ "\\"
+			                                    //+(((gp.dt.AddMinutes(gp.uniClock.Elapsed.Minutes).AddSeconds(gp.uniClock.Elapsed.Seconds).AddMilliseconds(gp.uniClock.Elapsed.Milliseconds)).Ticks)) ); 
+
+
+			int tempPellLoc = gp.pellets.FindIndex(x=> x.pellNumber == tempPell.pellNumber);
+
+			gp.pellets.RemoveAt(tempPellLoc);
+			//gp.pellets.RemoveAt(0); // server will determine who ate it.
 			Destroy(c.gameObject);
-			print("size of pellet array(AFTER): ----> "+gp.pellets.Count);
+
+// his now set when server sends it
+			//print("size of pellet array(AFTER): ----> "+gp.pellets.Count);
 		
-			Transform tempPell = Instantiate(gp.pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
-			                                               0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
+			//Transform tempPell = Instantiate(gp.pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
+			//                                               0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
 
-			gp.pellets.Add(tempPell); 
+			//gp.pellets.Add(tempPell); 
 
-			 int growSide = UnityEngine.Random.Range(1,10);
+			 //int growSide = UnityEngine.Random.Range(1,10);
 
-			score += growSize;
+			//score += growSize;
+		
+			//this.transform.localScale = new Vector3(growSize,
+			//                                        this.transform.localScale.y,
+			 //                                       growSize);
 
+		/*
 		    if(growSide <= 5)
 			{
 			this.transform.localScale = new Vector3(this.transform.localScale.x+growSize,
@@ -118,7 +139,8 @@ public class Player : MonoBehaviour
 				                                        this.transform.localScale.y,
 				                                        this.transform.localScale.z+growSize);
 			}
-
+		*/
+		/*
 			float speedChange = (MoveSpeed-2);
 
 			if(speedChange < 1)
@@ -130,7 +152,8 @@ public class Player : MonoBehaviour
 			{
 				MoveSpeed = speedChange;
 			}
-			print("MoveSpeed " +MoveSpeed);
+		*/
+
 		}
 	}
 	IEnumerator resetBall()
