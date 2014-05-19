@@ -90,10 +90,21 @@ namespace SwarchServer
         }
 
         //Updates table with new info given
-        private void update(String table, String user, String info, String where)
+        private void update(String table, String user, String info)
         {
-            String update = String.Format(" {0} = '{1}',", user, info);
-            String statement = String.Format("UPDATE {0} SET {1} WHERE {2};", table, update, where);
+            String update = "";
+            String person = "";
+            if(table.Equals("scores"))
+            {
+                person = String.Format("name = '{0}',", user);
+                update = String.Format("score = '{0}',", info);
+            }
+            else if(table.Equals("users"))
+            {
+                person = String.Format("user = '{0}',", user);
+                update = String.Format("pass = '{0}',", info);
+            }
+            String statement = String.Format("UPDATE {0} SET {1} WHERE {2};", table, update, person);
 
             try
             {
@@ -129,8 +140,8 @@ namespace SwarchServer
 
             if (result.Rows.Count > 0)
             {
-                string u = result.Rows[0]["name"].ToString();
-                string p = result.Rows[0]["pass"].ToString();
+                String u = result.Rows[0]["name"].ToString();
+                String p = result.Rows[0]["pass"].ToString();
 
                 if (user.Equals(u))
                 {
@@ -150,6 +161,26 @@ namespace SwarchServer
                 insertValue("scores", user, "0");
             }
             return "added";
+        }
+        
+        //Run query to get the player's score
+        //Convert player's score to an integer
+        //Add that score to the score that you got in the query
+        //Update database with the cumulitive score
+        //Return new score
+        int updateScore(String user, int score)
+        {
+
+            String query = String.Format("SELECT name, score FROM scores WHERE name='{0}'", user);
+            DataTable result = runQuery(query);
+            String s = result.Rows[0]["pass"].ToString();
+
+            int si = Int32.Parse(s);
+            int newScore = si + score;
+
+            update("scores", user, newScore.ToString());
+
+            return newScore;
         }
     }
 }
