@@ -50,12 +50,22 @@ public class Player : MonoBehaviour
 
 		if( !AcceptsInput )
 			return;
-		
+
+        float initialZ = pos.z;
+        float initialX = pos.x;
 
 		input = Input.GetAxis( "Vertical" );
 		input2 = Input.GetAxis("Horizontal");	
 	    pos.z += input * MoveSpeed * Time.deltaTime;
-		pos.x += input2 *MoveSpeed * Time.deltaTime;	
+		pos.x += input2 *MoveSpeed * Time.deltaTime;
+
+        Debug.Log("Z: " + pos.z + "  X: " + pos.x);
+
+
+        if (pos.z - initialZ > 0)
+        {
+        }
+      
 	    
         
 

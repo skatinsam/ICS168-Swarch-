@@ -17,10 +17,6 @@ namespace SwarchServer
         {
             //Insert name of database here
             database = "Data Source=UserDatabase.db";
-<<<<<<< HEAD
-
-=======
->>>>>>> 70e38f3a4052a5d27a42522199f777b8f584a553
         }
         
         //BASIC DATABASE FUNCTIONS THAT ARE NEEDED
