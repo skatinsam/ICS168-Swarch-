@@ -165,7 +165,7 @@ public class Player : MonoBehaviour
 
     IEnumerator sendPosition()
     {
-        gp.returnSocket().SendTCPPacket("move\\{0}\\{1}\\{2}");
+        gp.returnSocket().sendQueue.Enqueue("move\\" + pos.x + "\\" + pos.z "\\" + );
         yield return new WaitForSeconds(.2f);
  
     }
