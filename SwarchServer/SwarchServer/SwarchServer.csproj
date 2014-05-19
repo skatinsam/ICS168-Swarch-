@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AlternateServer.cs" />
     <Compile Include="DatabaseManager.cs" />
+    <Compile Include="NTPTime.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />

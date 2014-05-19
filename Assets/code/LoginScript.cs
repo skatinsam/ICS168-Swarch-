@@ -138,31 +138,45 @@ public class LoginScript : MonoBehaviour
 				canTryLogin = true;
 			}
 
-			if(splitData[0] == "clientNumber")
+			else if(splitData[0] == "clientNumber")  // added else to all if's
 			{
-				gameProcess.clientNumber = (Convert.ToInt32(splitData[1]));
 
-				for(int i = 2; i< splitData.Length; ++i)
+				guiT.text = "LOADING .... ";
+
+				gameProcess.mainPlayerNumber = (Convert.ToInt32(splitData[1]));
+
+				gameProcess.initPlayerPos = new Vector3(float.Parse(splitData[2]),0,float.Parse(splitData[3]));
+
+
+				for(int i = 4; i< splitData.Length; ++i)
 				{
 					gameProcess.pelletsLocation.Add(float.Parse(splitData[i])); 
 				}
 
-				Application.LoadLevel("swarch(Whale)");
+
+				print ("\nPLEASE BE PATIENT, WAITING FOR OTHERS TO JOIN ");
 
 
-
-				gameProcess.loadPellets = true;
 			}
             
-			if(splitData[0] == "incorrectUserPass")
+			else if(splitData[0] == "incorrectUserPass")
 			{
 				guiT.text = "incorrect password or username, try again ";
 				loginEntered = false;
 
+			}
+			else if(splitData[0]== "startInitalGame")
+			{
+				gameProcess.guiTGP= guiT;
+				 gameProcess.initOpponentData = splitData;
 
+				Application.LoadLevel("swarch(Whale)");	
+
+				 gameProcess.loadPellets = true;
+				gameProcess.startedGame = true;
+			    
 			}
 		}
-
     }
 
     public string hash(string info)
