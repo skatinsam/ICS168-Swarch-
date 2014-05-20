@@ -69,11 +69,13 @@ public class Player : MonoBehaviour
 
 		if(c.tag == "Wall")
 		{
-			StartCoroutine( resetBall());
+			//StartCoroutine( resetBall());
 
 			print ("\n\nHIT WALL");
 
 			GameObject p = GameObject.Find("Player");
+
+			gp.returnSocket().sendQueue.Enqueue("wall\\"+ tempPell.pellNumber + "\\" +pellX +"\\"+ pellZ); //+ "\\"
 
 
 			pos =  Vector3.zero; // notify the server ??
@@ -145,7 +147,22 @@ public class Player : MonoBehaviour
 		*/
 
 		}
+		if(c.tag == "Opponent")
+		{
+			float oppX = c.transform.position.x;
+			float oppZ = c.transform.position.z;
+			opponent tempOpp = (opponent)c.GetComponent("opponent");
+
+			gp.returnSocket().sendQueue.Enqueue("hit\\"+ tempOpp.opponentNum + "\\" +oppX +"\\"+ oppZ);
+
+
+
+		}
+
+
+
 	}
+  /*
 	IEnumerator resetBall()
 	{
 		// reset position, speed, and direction
@@ -162,7 +179,7 @@ public class Player : MonoBehaviour
 		
 		resetting = false;
 	}
-
+  */
  }
 
 

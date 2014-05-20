@@ -52,6 +52,16 @@ namespace SwarchServer
         protected static int[] Score;
         protected static double hitTime;
 
+        protected struct wallBound
+        {
+           public double  rightWall =  23.12;
+             public double leftWall =   -23.12;
+
+             public double bottom = -12.22;
+              public double top = 14.23;
+
+        }
+
         // wallBounds[0] -- Top 
         // wallBounds[1] -- Bottom
         protected static double[] wallBounds;
