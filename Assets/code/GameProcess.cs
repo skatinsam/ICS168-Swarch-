@@ -185,6 +185,8 @@ public class GameProcess : MonoBehaviour
 						opp.name = "opponent"+splitData[k+2];
 						
 						opp.opponentNum = Convert.ToInt32(splitData[k+2]);
+
+                 //       player.score += 2;
 						
 					//}
 					
