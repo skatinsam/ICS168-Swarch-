@@ -492,7 +492,7 @@ namespace SwarchServer
                                 playInfo tempPlayInfo = new playInfo();
                                 tempPlayInfo.hitType = "hitOpp";
                                 tempPlayInfo.clientsNum2 = gd1.clientNum;
-                                tempPlayInfo.clientsNum = clientsEntered[i].clientNumber;
+                                tempPlayInfo.clientsNum =  clientsEntered[i].clientNumber;
                                 tempPlayInfo.size = gd1.size;
                                 tempPlayInfo.compareX = gd1.posX;
                                 tempPlayInfo.compareY = gd1.posY;
@@ -707,7 +707,7 @@ namespace SwarchServer
                         else if (data[0] == "wall")
                         {
                             gamedata.action = data[0];
-                            gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                            gamedata.clientNum = Convert.ToInt32(data[1]); 
                             gamedata.posX = Convert.ToDouble(data[2]);
                             gamedata.posY = Convert.ToDouble(data[3]);
 
@@ -724,7 +724,7 @@ namespace SwarchServer
                         else if (data[0] == "hitOpp")
                         {
                             gamedata.action = data[0];
-                            gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                            gamedata.clientNum = Convert.ToInt32(data[1]); 
                             gamedata.size = Convert.ToInt32(data[2]);
                             gamedata.posX = Convert.ToDouble(data[3]);
                             gamedata.posY = Convert.ToDouble(data[4]);
@@ -1106,7 +1106,7 @@ namespace SwarchServer
                                                     clientsEntered[indexC].playerSpeed = 10;
                                                     clientsEntered[indexC].playerSize = 2;
 
-                                                    int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
+                                                    int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum2);
 
                                                     clientsEntered[tempi].playerSize = 2; //compareGamePlay[i].size;
                                                     clientsEntered[tempi].posX = reset2X;
@@ -1136,7 +1136,7 @@ namespace SwarchServer
 
                                                     clientsEntered[indexC].playerSize += compareGamePlay[i].size;
 
-                                                    int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
+                                                    int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum2);
 
                                                     clientsEntered[tempi].playerSize = 2;
                                                     clientsEntered[tempi].playerSpeed = 10;
@@ -1152,7 +1152,7 @@ namespace SwarchServer
                                                 else if (clientsEntered[indexC].playerSize < compareGamePlay[i].size)
                                                 {
 
-                                                    int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
+                                                    int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum2);
 
                                                     clientsEntered[tempi].playerSize += clientsEntered[indexC].playerSize;
 
