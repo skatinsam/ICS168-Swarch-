@@ -17,7 +17,7 @@ public class GameProcess : MonoBehaviour
 	public bool startedGame;
 	public bool startNextRound;
 	public bool hitGoal;
-	public int winningMove ;
+	public int winningMove;
 
 	public int mainPlayerNumber;
 
@@ -221,10 +221,6 @@ public class GameProcess : MonoBehaviour
 						player.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+1]),
 						                                          player.transform.localScale.y,
 						                                          Convert.ToInt32(splitData[r+1]));
-
-          
-                        player.score += 2;
-                        print("Player score: " + player.score);
 					}
 					else
 					{
@@ -278,7 +274,11 @@ public class GameProcess : MonoBehaviour
 			   
 				
 			//}
-                
+            else if (splitData[0] == "score")
+            {
+                print("\nGOT TO UPDATE SCORE TO ::" + splitData[1]);
+                player.totalScore = Convert.ToInt32(splitData[1]);
+            }
 
 
 		}

@@ -102,6 +102,7 @@ namespace SwarchServer
             public string password;
 
             public int clientNum;
+            public int score;
             public string action;
             public double posX;
             public double posY;
@@ -288,6 +289,7 @@ private class processGame
     public string newClientsInfo;
     public int numClientsPass;
     public string currentClientsMove;
+    public string scoreUpdateInfo;
 
     List<int> newClientaddedNum = new List<int>();
 
@@ -299,6 +301,7 @@ private class processGame
       newClientsInfo = "";
       numClientsPass=0;
       currentClientsMove = "";
+      scoreUpdateInfo = "";
 
   }
 
@@ -446,7 +449,18 @@ private class processGame
                                
                                 break;
                             }
+                        case "score":
+                            {
+                                int newScore = db.updateScore(gd1.userName, gd1.score);
+                                gd1.score = newScore;
+                                scoreUpdateInfo = string.Concat(scoreUpdateInfo,
+                                        string.Format("\\{0}", gd1.score));
 
+                                clientsEntered[i].sw.WriteLine("startInitalGame{0}", scoreUpdateInfo);
+                                scoreUpdateInfo = "";
+
+                                break;
+                            }
 
                         default:
                             break;
@@ -524,6 +538,8 @@ private class processGame
               }
               addedNewPellets = "";
             }
+
+            
 
 
             //newClientaddedNum.Clear();
@@ -619,6 +635,12 @@ private class ThreadSock
                 gamedata.posY = Convert.ToDouble(data[3]);
                 //gamedata.timeStamp = Convert.ToDateTime(data[4]);
                 
+            }
+            if (data[0] == "score")
+            {
+                gamedata.action = data[0];
+                gamedata.userName = data[1];    //User Name
+                gamedata.score = Convert.ToInt32(data[2]); //Score
             }
 
             lock (thisLock)
