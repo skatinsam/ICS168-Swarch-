@@ -627,7 +627,7 @@ private class ThreadSock
                 gamedata.password = data[2];
                 
             }
-            if(data[0] == "hit" || data[0] == "move" )
+            if(data[0] == "hit" )
             {
                 gamedata.action = data[0];
                 gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
@@ -635,6 +635,15 @@ private class ThreadSock
                 gamedata.posY = Convert.ToDouble(data[3]);
                 //gamedata.timeStamp = Convert.ToDateTime(data[4]);
                 
+            }
+            if (data[0] == "move")
+            {
+                gamedata.action = data[0];
+                gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                gamedata.posX = Convert.ToDouble(data[2]);
+                gamedata.posY = Convert.ToDouble(data[3]);
+                //gamedata.timeStamp = Convert.ToDateTime(data[4]);
+
             }
             if (data[0] == "score")
             {
