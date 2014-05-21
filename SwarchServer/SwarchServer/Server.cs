@@ -639,8 +639,7 @@ private class ThreadSock
             if (data[0] == "score")
             {
                 gamedata.action = data[0];
-                gamedata.userName = data[1];    //User Name
-                gamedata.score = Convert.ToInt32(data[2]); //Score
+                gamedata.score = Convert.ToInt32(data[1]); //Score
             }
 
             lock (thisLock)
