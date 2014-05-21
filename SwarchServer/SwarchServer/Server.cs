@@ -102,6 +102,7 @@ namespace SwarchServer
             public string password;
 
             public int clientNum;
+            public int score;
             public string action;
             public double posX;
             public double posY;
@@ -446,7 +447,13 @@ private class processGame
                                
                                 break;
                             }
+                        case "score":
+                            {
+                                int newScore = db.updateScore(gd1.userName, gd1.score);
+                                gd1.score = newScore;
 
+                                break;
+                            }
 
                         default:
                             break;
@@ -619,6 +626,12 @@ private class ThreadSock
                 gamedata.posY = Convert.ToDouble(data[3]);
                 //gamedata.timeStamp = Convert.ToDateTime(data[4]);
                 
+            }
+            if (data[0] == "score")
+            {
+                gamedata.action = data[0];
+                gamedata.userName = data[1];    //User Name
+                gamedata.score = Convert.ToInt32(data[2]); //Score
             }
 
             lock (thisLock)

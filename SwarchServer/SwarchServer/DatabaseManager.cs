@@ -168,7 +168,7 @@ namespace SwarchServer
         //Add that score to the score that you got in the query
         //Update database with the cumulitive score
         //Return new score
-        int updateScore(String user, int score)
+        public int updateScore(String user, int score)
         {
 
             String query = String.Format("SELECT name, score FROM scores WHERE name='{0}'", user);
