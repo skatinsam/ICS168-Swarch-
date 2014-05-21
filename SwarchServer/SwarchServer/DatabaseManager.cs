@@ -96,13 +96,13 @@ namespace SwarchServer
             String person = "";
             if(table.Equals("scores"))
             {
-                person = String.Format("name = '{0}',", user);
-                update = String.Format("score = '{0}',", info);
+                person = String.Format("user = '{0}'", user);
+                update = String.Format("score = '{0}'", info);
             }
             else if(table.Equals("users"))
             {
-                person = String.Format("user = '{0}',", user);
-                update = String.Format("pass = '{0}',", info);
+                person = String.Format("name = '{0}'", user);
+                update = String.Format("pass = '{0}'", info);
             }
             String statement = String.Format("UPDATE {0} SET {1} WHERE {2};", table, update, person);
 
@@ -168,12 +168,12 @@ namespace SwarchServer
         //Add that score to the score that you got in the query
         //Update database with the cumulitive score
         //Return new score
-        int updateScore(String user, int score)
+        public int updateScore(String user, int score)
         {
 
-            String query = String.Format("SELECT name, score FROM scores WHERE name='{0}'", user);
+            String query = String.Format("SELECT user, score FROM scores WHERE user='{0}'", user);
             DataTable result = runQuery(query);
-            String s = result.Rows[0]["pass"].ToString();
+            String s = result.Rows[0]["score"].ToString();
 
             int si = Int32.Parse(s);
             int newScore = si + score;

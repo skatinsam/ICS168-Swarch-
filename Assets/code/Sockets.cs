@@ -10,8 +10,6 @@ using System.Diagnostics;
 using System.Threading;
 
 public class Sockets : MonoBehaviour {
-	
-	
 
 
 	const string SERVER_LOCATION = "128.195.72.186";  //<-- **** CHANGE for every connection to internet 

@@ -156,7 +156,7 @@ public class LoginScript : MonoBehaviour
 
 				print ("\nPLEASE BE PATIENT, WAITING FOR OTHERS TO JOIN ");
 
-
+                 
 			}
             
 			else if(splitData[0] == "incorrectUserPass")

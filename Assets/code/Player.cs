@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
 	
 	public int growSize = 2;
 	public int score = 0;
+    public int totalScore = 0;
 	
 	// whether this paddle can accept player input
 	public bool AcceptsInput = true;
@@ -38,6 +39,7 @@ public class Player : MonoBehaviour
 		MoveSpeed = 10f;
 		playerNum = 0;
 
+        StartCoroutine(sendPosition());
 	}
 	
 	void Update()
@@ -77,8 +79,30 @@ public class Player : MonoBehaviour
 
 			gp.returnSocket().sendQueue.Enqueue("wall\\"+ this.playerNum + "\\" + this.pos.x +"\\"+ this.pos.z); //+ "\\"
 
-
+			gp.returnSocket().sendQueue.Enqueue("score\\" + score);
 			//pos =  Vector3.zero; // notify the server ??
+
+			switch(this.playerNum)//(tempClient.clientNumber)
+			{
+			case 1:
+			{
+				this.pos = new Vector3(-17.0f,0f,7.0f);
+				break;
+			}
+			case 2:
+			{
+				this.pos = new Vector3(20.0f,0f,7.0f);
+				break;
+			}
+				
+			case 3:
+			{
+				this.pos = new Vector3(20.0f,0f,-10.0f);
+				break;
+			}
+			default:
+				break;
+			}
 
 			//this.transform.localScale = new Vector3(2,2,2);
 			//score = 0;
@@ -186,9 +210,8 @@ public class Player : MonoBehaviour
   */
     IEnumerator sendPosition()
     {
-        gp.returnSocket().SendTCPPacket("move\\{0}\\{1}\\{2}");
-        yield return new WaitForSeconds(.2f);
- 
+        yield return new WaitForSeconds(.4f);
+        gp.returnSocket().sendQueue.Enqueue("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
     }
  }
 
