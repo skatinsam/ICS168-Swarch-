@@ -53,14 +53,14 @@ public class Player : MonoBehaviour
 
 		if( !AcceptsInput )
 			return;
-
-        float initialZ = pos.z;
-        float initialX = pos.x;
+		
 
 		input = Input.GetAxis( "Vertical" );
 		input2 = Input.GetAxis("Horizontal");	
 	    pos.z += input * MoveSpeed * Time.deltaTime;
-		pos.x += input2 *MoveSpeed * Time.deltaTime;      
+		pos.x += input2 *MoveSpeed * Time.deltaTime;	
+	    
+        
 
 		this.transform.position = pos;
 		scoreDisplay.transform.position = pos;
@@ -71,17 +71,53 @@ public class Player : MonoBehaviour
 
 		if(c.tag == "Wall")
 		{
-			StartCoroutine( resetBall());
+			//StartCoroutine( resetBall());
 
-			print ("\n\nHIT WALL");
+			print ("\nHIT WALL");
 
-			GameObject p = GameObject.Find("Player");
+			//Player p = GameObject.Find("Player").GetComponent<GameProcess>();
 
+			gp.returnSocket().sendQueue.Enqueue("wall\\"+ this.playerNum + "\\" + this.pos.x +"\\"+ this.pos.z); //+ "\\"
 
-			pos =  Vector3.zero; // notify the server ??
 			gp.returnSocket().sendQueue.Enqueue("score\\" + score);
-			this.transform.localScale = new Vector3(2,2,2);
-			score = 0;
+			//pos =  Vector3.zero; // notify the server ??
+
+			switch(this.playerNum)//(tempClient.clientNumber)
+			{
+			case 1:
+			{
+				this.pos = new Vector3(-17.0f,0f,7.0f);
+				break;
+			}
+			case 2:
+			{
+				this.pos = new Vector3(20.0f,0f,7.0f);
+				break;
+			}
+				
+			case 3:
+			{
+				this.pos = new Vector3(20.0f,0f,-10.0f);
+				break;
+			}
+			default:
+				break;
+			}
+
+			//this.transform.localScale = new Vector3(2,2,2);
+			//score = 0;
+
+		}
+		if(c.tag == "Opponent")
+		{
+
+			float oppX = c.transform.position.x;
+			float oppZ = c.transform.position.z;
+			opponent tempOpp = (opponent)c.GetComponent("opponent");
+
+			gp.returnSocket().sendQueue.Enqueue("hitOpp\\"+ tempOpp.opponentNum +"\\"
+			                                    + tempOpp.transform.localScale.x 
+			                                    +"\\" + oppX +"\\"+ oppZ); 
 
 		}
 		if(c.tag == "Pellet")
@@ -91,7 +127,9 @@ public class Player : MonoBehaviour
 			Pellets tempPell = (Pellets)c.GetComponent("Pellets");
 
 			 
-			gp.returnSocket().sendQueue.Enqueue("hit\\"+ tempPell.pellNumber + "\\" +pellX +"\\"+ pellZ); //+ "\\"
+			gp.returnSocket().sendQueue.Enqueue("hitPell\\"+ tempPell.pellNumber +"\\"
+			                                    + tempPell.transform.localScale.x  
+			                                    +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
 			                                    //+(((gp.dt.AddMinutes(gp.uniClock.Elapsed.Minutes).AddSeconds(gp.uniClock.Elapsed.Seconds).AddMilliseconds(gp.uniClock.Elapsed.Milliseconds)).Ticks)) ); 
 
 
@@ -147,7 +185,12 @@ public class Player : MonoBehaviour
 		*/
 
 		}
+
+
+
+
 	}
+  /*
 	IEnumerator resetBall()
 	{
 		// reset position, speed, and direction
@@ -164,7 +207,7 @@ public class Player : MonoBehaviour
 		
 		resetting = false;
 	}
-
+  */
     IEnumerator sendPosition()
     {
         yield return new WaitForSeconds(.2f);

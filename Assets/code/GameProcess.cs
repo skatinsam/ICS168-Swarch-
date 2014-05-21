@@ -193,26 +193,32 @@ public class GameProcess : MonoBehaviour
 				}
 
 			}
-			else if(splitData[0] == "getPell")
+			else if(splitData[0] == "move")
 			{
-				// splitData[1] -- timeStamp
-		      /*
-				player.MoveSpeed = float.Parse( splitData[2]);
+				for(int i=1; i<splitData.Length; i=i+3)
+				{
+
+					if(Convert.ToInt32(splitData[i+2]) == player.playerNum) 
+					{
+							player.transform.position = new Vector3(float.Parse(splitData[i]),0f,float.Parse(splitData[i+1]));
+						
+							
+					}
+					else
+					{
+						opponent tempClient = GameObject.Find("opponent"+splitData[i+2]).GetComponent<opponent>();
+						
+							tempClient.pos = new Vector3(float.Parse(splitData[i]),0f,float.Parse(splitData[i+1]));
 
 
-
-					//score += growSize;
-
-
-					player.transform.localScale = new Vector3(Convert.ToInt32(splitData[1]),
-					                                        player.transform.localScale.y,
-					                                          Convert.ToInt32(splitData[1]));
-
-              */
+					}
+				}
+			
 			}
+		 //*/
 			else if(splitData[0] == "newPell")
 			{
-					print ("GOT INTO NEWpELL _-_-_-_");
+
 			  for(int r = 1; r< splitData.Length;  r=r+6)
 		      {
 				    if(Convert.ToInt32(splitData[r]) == player.playerNum)
@@ -227,7 +233,7 @@ public class GameProcess : MonoBehaviour
 					}
 					else
 					{
-							opponent tempClient = GameObject.Find("opponent"+splitData[r]).GetComponent<opponent>();
+					   opponent tempClient = GameObject.Find("opponent"+splitData[r]).GetComponent<opponent>();
 						
 						tempClient.MoveSpeed = float.Parse( splitData[r+2]);
 
@@ -272,16 +278,93 @@ public class GameProcess : MonoBehaviour
 			  }
 
 			}
-			//else if(splitData[0] == "missPell")
-			//{
-			   
+			else if (splitData[0] == "score")
+			{
+				print("\nGOT TO UPDATE SCORE TO ::" + splitData[1]);
+				player.totalScore = Convert.ToInt32(splitData[1]);
+			}
+			else if(splitData[0] == "pH")
+			{
+			   /*
+clientsEntered[indexC].clientNumber, 2, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEntered[tempi].playerSpeed, reset2X, reset2Y));
+					
+			    */
 				
-			//}
-            else if (splitData[0] == "score")
-            {
-                print("\nGOT TO UPDATE SCORE TO ::" + splitData[1]);
-                player.totalScore = Convert.ToInt32(splitData[1]);
-            }
+			  for(int r =1; r< splitData.Length; r = r+10)
+			  {
+            
+
+				if(Convert.ToInt32(splitData[r]) == player.playerNum)
+				{
+					
+					player.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+1]),
+					                                          player.transform.localScale.y,
+					                                          Convert.ToInt32(splitData[r+1]));
+				    
+				   player.MoveSpeed = float.Parse( splitData[r+2]);
+				
+						
+							player.transform.position = new Vector3(float.Parse(splitData[r+3]),
+							                                        player.transform.position.y,
+							                                        float.Parse(splitData[r+3]));		
+			    
+						
+					//  UPDATE THE OPPONENT //
+					
+					opponent tempClient = GameObject.Find("opponent"+splitData[r+4]).GetComponent<opponent>();
+					
+					
+					
+					tempClient.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+5]),
+					                                              tempClient.transform.localScale.y,
+					                                              Convert.ToInt32(splitData[r+5]));
+					
+					tempClient.MoveSpeed = float.Parse( splitData[r+6]);
+					
+					tempClient.transform.position = new Vector3(float.Parse(splitData[r+7]),
+					                                            tempClient.transform.position.y,
+					                                            float.Parse(splitData[r+8]));
+						
+						
+			    }
+				else
+				{
+					opponent tempClient = GameObject.Find("opponent"+splitData[r]).GetComponent<opponent>();
+					
+					
+					
+					tempClient.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+1]),
+					                                              tempClient.transform.localScale.y,
+					                                              Convert.ToInt32(splitData[r+1]));
+					
+					tempClient.MoveSpeed = float.Parse( splitData[r+2]);
+					
+					tempClient.transform.position = new Vector3(float.Parse(splitData[r+3]),
+					                                            tempClient.transform.position.y,
+					                                            float.Parse(splitData[r+4]));
+
+
+
+							//  UPDATE THE PLAYER //
+
+					player.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+5]),
+					                                          player.transform.localScale.y,
+					                                          Convert.ToInt32(splitData[r+5]));
+					
+					player.MoveSpeed = float.Parse( splitData[r+6]);
+					
+					
+					player.transform.position = new Vector3(float.Parse(splitData[r+7]),
+					                                        player.transform.position.y,
+					                                        float.Parse(splitData[r+8]));
+
+
+				}
+			  }
+
+			}
+
 
 
 		}
