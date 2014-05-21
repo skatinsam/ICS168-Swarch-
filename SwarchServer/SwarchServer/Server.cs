@@ -52,14 +52,15 @@ namespace SwarchServer
         protected static int[] Score;
         protected static double hitTime;
 
-        protected struct wallBound
+        protected static wallBound walls = new wallBound();
+
+        protected class wallBound
         {
            public double  rightWall =  23.12;
-             public double leftWall =   -23.12;
+           public double leftWall =   -23.12;
 
-             public double bottom = -12.22;
-              public double top = 14.23;
-
+           public double bottomWall = -12.22;
+           public double topWall = 14.23;
         }
 
         // wallBounds[0] -- Top 
@@ -71,13 +72,16 @@ namespace SwarchServer
         protected static double[] goalWall;
       
         protected static bool startedProcess;
-        
+
+        protected static int numClientsPass;
+
         protected static List<Client> clientsEntered = new List<Client>();
         protected static DatabaseManager db = new DatabaseManager();
         protected static bool passwordAcepted;
         //protected static List<pellet>  = new List<pellet>();
-        protected static string addedNewPellets; 
-       
+        protected static string addedNewPellets;
+        protected static string clientsHit;
+
         protected static List<playInfo> compareGamePlay = new List<playInfo>();
 
 
@@ -87,8 +91,12 @@ namespace SwarchServer
      ///*  
        protected struct playInfo
         {
+           public string hitType;
            public int objectNum;
+           public int size;
+          
            public int clientsNum;
+           public int clientsNum2;
            public double compareX;
            public double compareY;
            public DateTime timeStamp;
@@ -119,6 +127,8 @@ namespace SwarchServer
             public double movement2;
             public DateTime timeStamp;
 
+            public int size;
+          
         }
 
         // used to store client communication for thread 
@@ -296,7 +306,7 @@ private class processGame
 
     public string clientsConnectedInfo;
     public string newClientsInfo;
-    public int numClientsPass;
+    
     public string currentClientsMove;
 
     List<int> newClientaddedNum = new List<int>();
@@ -317,7 +327,7 @@ private class processGame
         while (clientsEntered.Count != 0)
         {
             gameData gd1;
-
+            
             for (int i = 0; i < clientsEntered.Count; ++i)
             {
                // Client tempClient = clientsEntered[i];
@@ -336,11 +346,15 @@ private class processGame
                             {
                                  //*** MAKE SURE MOVEMENTS ARE SENT NO BIGGER THEN SIZE OF PELLET
 
+                                 clientsEntered[i].posX = gd1.posX;
+                                 clientsEntered[i].posY = gd1.posY;
+
+
                                 currentClientsMove = string.Concat(currentClientsMove,
                                                             string.Format("\\{0}\\{1}\\{2}", gd1.movement1, gd1.movement2, clientsEntered[i].clientNumber)); //tempClient.clientNumber));
                                 break;
                             }
-
+                            //  move\\gameobject.x\\gameobject.z\\1
 
                         case "userAndPass":
                             {
@@ -441,11 +455,14 @@ private class processGame
                                 
                                 break;
                             }
-                        case "hit":
+                        case "hitPell":
                             {
                                playInfo tempPlayInfo = new playInfo();
 
+                               tempPlayInfo.hitType = "hitPell";
+
                                tempPlayInfo.objectNum = gd1.clientNum;
+                               tempPlayInfo.size = gd1.size;
                                tempPlayInfo.compareX = gd1.posX;
                                tempPlayInfo.compareY = gd1.posY;
                                tempPlayInfo.timeStamp = gd1.timeStamp;
@@ -454,6 +471,27 @@ private class processGame
 
                                compareGamePlay.Add(tempPlayInfo); //.Insert(tempClient.clientNumber, tempPlayInfo);
                                
+                                break;
+                            }
+
+                        case"hitOpp":
+                            {
+                                playInfo tempPlayInfo = new playInfo();
+                                tempPlayInfo.hitType = "hitOpp";
+                                tempPlayInfo.clientsNum2 = gd1.clientNum;
+                                tempPlayInfo.clientsNum = clientsEntered[i].clientNumber;
+                                tempPlayInfo.size = gd1.size;
+                                tempPlayInfo.compareX = gd1.posX;
+                                tempPlayInfo.compareY = gd1.posY;
+
+                                compareGamePlay.Add(tempPlayInfo); 
+
+                                break;
+                            }
+
+                        case "wall":
+                            {
+                                
                                 break;
                             }
 
@@ -519,7 +557,12 @@ private class processGame
             if (currentClientsMove != "")
             {
                 // send everyone all movements logged in currentClientsMove 
-                
+                for (int l = 0; l < clientsEntered.Count; ++l)
+                {
+
+                    clientsEntered[l].sw.WriteLine("move{0}", currentClientsMove);
+
+                }
                 
                 currentClientsMove = "";
             }
@@ -533,6 +576,18 @@ private class processGame
                   
               }
               addedNewPellets = "";
+            }
+
+            if (clientsHit != "")
+            {
+                for (int l = 0; l < clientsEntered.Count; ++l)
+                {
+
+                    clientsEntered[l].sw.WriteLine("pH{0}", clientsHit);
+
+                }
+
+                clientsHit = "";
             }
 
 
@@ -614,23 +669,54 @@ private class ThreadSock
                 break;
             }
             //readData
-            if (data[0] == "userAndPass")
+            else if (data[0] == "userAndPass")
             {
                 gamedata.action = data[0];    // ???? might need to create new gamedata for every entry 
                 gamedata.userName = data[1];
                 gamedata.password = data[2];
                 
             }
-            if(data[0] == "hit")
+            else if ( data[0] == "move")
+            {
+                
+                gamedata.action = data[0];
+                gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                gamedata.posX = Convert.ToDouble(data[2]);
+                gamedata.posY = Convert.ToDouble(data[3]);
+                //gamedata.timeStamp = Convert.ToDateTime(data[5]);
+
+            }
+            else if(data[0] == "wall")
             {
                 gamedata.action = data[0];
                 gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
                 gamedata.posX = Convert.ToDouble(data[2]);
                 gamedata.posY = Convert.ToDouble(data[3]);
-                //gamedata.timeStamp = Convert.ToDateTime(data[4]);
-                
+
             }
-            
+            else if (data[0] == "hitPell")
+            {
+                gamedata.action = data[0];
+                gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                gamedata.size = Convert.ToInt32(data[2]);
+                gamedata.posX = Convert.ToDouble(data[3]);
+                gamedata.posY = Convert.ToDouble(data[4]);
+
+            }
+            else if (data[0] == "hitOpp")
+            {
+                gamedata.action = data[0];
+                gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                gamedata.size = Convert.ToInt32(data[2]);
+                gamedata.posX = Convert.ToDouble(data[3]);
+                gamedata.posY = Convert.ToDouble(data[4]);
+
+            }
+            else
+            {
+                gamedata.action = "";
+                //gamedata.clientNum = 0;
+            }
 
             lock (thisLock)
             {
@@ -669,7 +755,7 @@ private class ClientGameState
     public bool missed;
 
     bool wallHit;
-
+    bool startedTimer;
     public Random randPellets;
     bool startedGame;
     int numberOfpellets;
@@ -711,7 +797,7 @@ private class ClientGameState
         missed = false;
 
         wallHit = false;
-
+        startedTimer = false;
          randPellets = new Random();
          randomGen = new Random();
         
@@ -720,7 +806,7 @@ private class ClientGameState
         numberOfpellets = 5; // WHERE TO DETERMINE NUMBER OF PELLETS IN GAME
         //initPelletLocation = "";  //  "iniP\\";
         addedNewPellets = "";
-
+        clientsHit = "";
          generatedX = new List<int>();
          generatedY = new List<int>();
          resolvedPellets = new List<playInfo>();
@@ -763,15 +849,62 @@ private class ClientGameState
                 } 
                
                 startedGame = true;
-               
-               
-                physTimer.Start(); 
-
+              
             }
+           // if(!startedTimer&& numClientsPass >1)
+           // {
+           //     physTimer.Start();
+           //     startedTimer = true;
+           // }
 
-            if (physTimer.Elapsed.Milliseconds >= 20) 
+            if (numClientsPass > 1) // physTimer.Elapsed.Milliseconds >= 20 && 
             {
+                List<Client> tempC = new List<Client>(); 
+                     
+                     tempC = clientsEntered.FindAll(x => x.posX >= walls.rightWall || x.posX <= walls.leftWall
+                                            || x.posY >= walls.topWall || x.posY <= walls.bottomWall);
+                if ( tempC.Count !=0 )
+                {
+                    for(int i=0; i< tempC.Count; ++i)
+                    {
+                        int wallHitIndex = clientsEntered.IndexOf(tempC[i]);
 
+                        switch (clientsEntered[wallHitIndex].clientNumber)
+                        {
+                            case 1:
+                                {
+                                    clientsEntered[wallHitIndex].posX = -17;
+                                    clientsEntered[wallHitIndex].posX = 7;
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    clientsEntered[wallHitIndex].posX = 20;
+                                    clientsEntered[wallHitIndex].posX = 7;
+                                    break;
+                                }
+
+                            case 3:
+                                {
+                                    clientsEntered[wallHitIndex].posX = 20;
+                                    clientsEntered[wallHitIndex].posX = -10;
+                                    break;
+                                }
+                            default:
+                                break;
+                        }
+
+
+                        clientsEntered[wallHitIndex].playerSize = 2;
+                        clientsEntered[wallHitIndex].playerSpeed = 10;
+
+                         //wallHitClients = string.Concat(wallHitClients, string.Format("\\{0}\\{1}\\{2}",
+                         //  clientsEntered[wallHitIndex].clientNumber, clientsEntered[wallHitIndex].posX, clientsEntered[wallHitIndex].posY));
+                        
+                    }
+
+                }
+            
                 if (compareGamePlay.Count != 0)
                 {
 
@@ -784,10 +917,14 @@ private class ClientGameState
                         
                         //List<playInfo> tempList = compareGamePlay.FindAll((x => x.objectNum == i+1) );
 
-                     
+                   // /* 
                        // ?? wait to see if another "hit" is on it's way.
                       for (int i = 0; i < compareGamePlay.Count; ++i)
                       { 
+
+                        if(compareGamePlay[i].hitType == "hitPell")
+                        {
+
                                                                                 //orderTempList[i]
                          //Client c =  clientsEntered.Find(x => x.clientNumber == compareGamePlay[i].clientsNum);  
 
@@ -798,8 +935,10 @@ private class ClientGameState
                           {
                                                                //orderTempList[i] <--> all compareGamePlay[i]
                             //c <--> clientsEntered[indexC]
-                              if ((clientsEntered[indexC].posX + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareX - .5) || (clientsEntered[indexC].posX - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareX + .5)
-                                || (clientsEntered[indexC].posY + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareY - .5) || (clientsEntered[indexC].posY - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareY + .5)
+                              if ((clientsEntered[indexC].posX + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareX - (compareGamePlay[i].size/2)) 
+                                || (clientsEntered[indexC].posX - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareX + (compareGamePlay[i].size/2))
+                                || (clientsEntered[indexC].posY + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareY - (compareGamePlay[i].size / 2))
+                                || (clientsEntered[indexC].posY - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareY + (compareGamePlay[i].size / 2))
                                 && !resolvedPellets.Exists(x => (x.objectNum == compareGamePlay[i].objectNum) 
                                     && (x.compareX == compareGamePlay[i].compareX) && (x.compareY == compareGamePlay[i].compareY)))
                               {
@@ -860,10 +999,215 @@ private class ClientGameState
 
 
                           lastProcessRange = compareGamePlay.Count;
+
+
+                        }
+                      ///*
+                        else if(compareGamePlay[i].hitType == "hitOpp")
+                        {
+
+                            int indexC = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
+
+                            
+                            if (clientsEntered[indexC].clientNumber != 0)
+                            {
+                                //orderTempList[i] <--> all compareGamePlay[i]
+                                //c <--> clientsEntered[indexC]
+                                if ((clientsEntered[indexC].posX + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareX - (compareGamePlay[i].size / 2))
+                                || (clientsEntered[indexC].posX - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareX + (compareGamePlay[i].size / 2))
+                                || (clientsEntered[indexC].posY + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareY - (compareGamePlay[i].size / 2))
+                                || (clientsEntered[indexC].posY - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareY + (compareGamePlay[i].size / 2))
+                                && !resolvedPellets.Exists(x => (x.objectNum == compareGamePlay[i].objectNum)
+                                                            && (x.compareX == compareGamePlay[i].compareX) && (x.compareY == compareGamePlay[i].compareY)))
+                                {
+
+                                    double reset1X = 0;
+                                    double reset1Y = 0;
+                                    
+                                    double reset2X = 0;
+                                    double reset2Y = 0;
+
+                                    switch (clientsEntered[indexC].clientNumber)
+                                    {
+                                        case 1:
+                                            {
+                                                reset1X = -17;
+                                                reset1Y = 7;
+                                                break;
+                                            }
+                                        case 2:
+                                            {
+                                                reset1X = 20;
+                                                reset1Y = 7;
+                                                
+                                                break;
+                                            }
+
+                                        case 3:
+                                            {
+                                                reset1X = 20;
+                                                reset1Y = -10;
+                                                break;
+                                            }
+                                        default:
+                                            break;
+                                    }
+
+                                    switch (compareGamePlay[i].clientsNum)
+                                    {
+                                        case 1:
+                                            {
+                                                reset2X = -17;
+                                                reset2Y = 7;
+                                                break;
+                                            }
+                                        case 2:
+                                            {
+                                                reset2X = 20;
+                                                reset2Y = 7;
+
+                                                break;
+                                            }
+
+                                        case 3:
+                                            {
+                                                reset2X = 20;
+                                                reset2Y = -10;
+                                                break;
+                                            }
+                                        default:
+                                            break;
+                                    }
+
+
+                                  if (clientsEntered[indexC].playerSize == compareGamePlay[i].size)
+                                  {
+                                    //reset both and loose their points
+                                      clientsEntered[indexC].posX = reset1X;
+                                      clientsEntered[indexC].posY = reset1Y;
+                                      clientsEntered[indexC].playerSpeed = 10;
+                                      clientsEntered[indexC].playerSize = 2;
+
+                                    int tempi =   clientsEntered.FindIndex(x=>x.clientNumber == compareGamePlay[i].clientsNum);
+
+                                    clientsEntered[tempi].playerSize = 2; //compareGamePlay[i].size;
+                                    clientsEntered[tempi].posX = reset2X;
+                                    clientsEntered[tempi].posY = reset2Y;
+                                    clientsEntered[tempi].playerSpeed = 10;
+
+                                    clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}",
+                                             2, clientsEntered[indexC].playerSpeed ,  clientsEntered[indexC].posX,
+                                             clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEntered[tempi].playerSpeed, reset2X, reset2Y));
+
+                                  }
+                                  else if (clientsEntered[indexC].playerSize > compareGamePlay[i].size)
+                                  {
+
+                                      double speedChange = (clientsEntered[indexC].playerSpeed - 2);
+
+                                      if (speedChange < 1)
+                                      {
+                                          clientsEntered[indexC].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                      }
+                                      else
+                                      {
+                                          clientsEntered[indexC].playerSpeed = speedChange;
+                                      }
+
+
+                                      clientsEntered[indexC].playerSize += compareGamePlay[i].size;
+
+                                      int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
+
+                                      clientsEntered[tempi].playerSize = 2;
+                                      clientsEntered[tempi].playerSpeed = 10;
+                                      clientsEntered[tempi].posX = reset2X;
+                                      clientsEntered[tempi].posY = reset2Y;
+
+                                                                // clientsEntered[indexC].clientNumber,
+                                      clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}",
+                                              clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                             clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEntered[tempi].playerSpeed, reset2X, reset2Y));
+                                                                        //compareGamePlay[i].clientsNum,
+                                  }
+                                  else if (clientsEntered[indexC].playerSize < compareGamePlay[i].size)
+                                  {
+
+                                      int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
+
+                                      clientsEntered[tempi].playerSize += clientsEntered[indexC].playerSize;
+
+                                      double speedChange = (clientsEntered[tempi].playerSpeed - 2);
+
+                                      if (speedChange < 1)
+                                      {
+                                          clientsEntered[tempi].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                      }
+                                      else
+                                      {
+                                          clientsEntered[tempi].playerSpeed = speedChange;
+                                      }
+
+
+                                       //areGamePlay[i].size;
+
+                                      clientsEntered[indexC].posX = reset1X;
+                                      clientsEntered[indexC].posY = reset1Y;
+                                      clientsEntered[indexC].playerSize = 2;
+                                      clientsEntered[indexC].playerSpeed = 10;
+
+                                      clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}",
+                                             2, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                             clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[tempi].playerSpeed, 
+                                             clientsEntered[tempi].posX, clientsEntered[tempi].posY)); 
+
+
+                                  }
+
+
+                                   // double speedChange = (clientsEntered[indexC].playerSpeed - 2);
+
+                                   // if (speedChange < 1)
+                                   // {
+                                    //    clientsEntered[indexC].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                   // }
+                                   // else
+                                   // {
+                                   //     clientsEntered[indexC].playerSpeed = speedChange;
+                                   // }
+
+                                  /*
+                                    clientsEntered[indexC].playerSize = clientsEntered[indexC].playerSize + growSize;
+                                    
+
+                                    int indPell = gamePellets.FindIndex(x => x.pellNum == compareGamePlay[i].objectNum);
+
+                                    gamePellets[indPell].px = NextRanX();
+                                    gamePellets[indPell].py = NextRanY();
+                                 */
+                                    playInfo addToResolve = new playInfo();
+                                    addToResolve.objectNum = compareGamePlay[i].objectNum;
+                                    addToResolve.compareX = compareGamePlay[i].compareX;
+                                    addToResolve.compareY = compareGamePlay[i].compareY;
+                                   
+                                    resolvedPellets.Add(addToResolve);
+
+                                }
+                                
+                            }
+
+                            lastProcessRange = compareGamePlay.Count;
+                        
+                        }
+                     //*/
                       }
+
+
                       compareGamePlay.RemoveRange(0, lastProcessRange);
                       
-
                 }
                     resolvedPellets.Clear();
 
