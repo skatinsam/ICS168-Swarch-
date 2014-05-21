@@ -289,6 +289,7 @@ private class processGame
     public string newClientsInfo;
     public int numClientsPass;
     public string currentClientsMove;
+    public string scoreUpdateInfo;
 
     List<int> newClientaddedNum = new List<int>();
 
@@ -300,6 +301,7 @@ private class processGame
       newClientsInfo = "";
       numClientsPass=0;
       currentClientsMove = "";
+      scoreUpdateInfo = "";
 
   }
 
@@ -451,6 +453,11 @@ private class processGame
                             {
                                 int newScore = db.updateScore(gd1.userName, gd1.score);
                                 gd1.score = newScore;
+                                scoreUpdateInfo = string.Concat(scoreUpdateInfo,
+                                        string.Format("\\{0}", gd1.score));
+
+                                clientsEntered[i].sw.WriteLine("startInitalGame{0}", scoreUpdateInfo);
+                                scoreUpdateInfo = "";
 
                                 break;
                             }
@@ -531,6 +538,8 @@ private class processGame
               }
               addedNewPellets = "";
             }
+
+            
 
 
             //newClientaddedNum.Clear();
