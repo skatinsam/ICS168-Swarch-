@@ -38,6 +38,8 @@ public class Player : MonoBehaviour
 		MoveSpeed = 10f;
 		playerNum = 0;
 
+        StartCoroutine(sendPosition());
+
 	}
 	
 	void Update()
@@ -165,8 +167,9 @@ public class Player : MonoBehaviour
 
     IEnumerator sendPosition()
     {
-        gp.returnSocket().sendQueue.Enqueue("move\\" + pos.x + "\\" + pos.z "\\" + );
+
         yield return new WaitForSeconds(.2f);
+        gp.returnSocket().sendQueue.Enqueue("move\\" + pos.x + "\\" + pos.z + "\\" + playerNum);
  
     }
  }

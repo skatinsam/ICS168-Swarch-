@@ -221,6 +221,10 @@ public class GameProcess : MonoBehaviour
 						player.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+1]),
 						                                          player.transform.localScale.y,
 						                                          Convert.ToInt32(splitData[r+1]));
+
+          
+                        player.score += 2;
+                        print("Player score: " + player.score);
 					}
 					else
 					{
@@ -274,7 +278,7 @@ public class GameProcess : MonoBehaviour
 			   
 				
 			//}
-
+                
 
 
 		}
