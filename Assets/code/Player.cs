@@ -39,6 +39,7 @@ public class Player : MonoBehaviour
 		MoveSpeed = 10f;
 		playerNum = 0;
 
+        StartCoroutine(sendPosition());
 	}
 	
 	void Update()
@@ -167,7 +168,7 @@ public class Player : MonoBehaviour
     IEnumerator sendPosition()
     {
         yield return new WaitForSeconds(.4f);
-        gp.returnSocket().SendTCPPacket("move\\{0}\\{1}\\{2}"); 
+        gp.returnSocket().sendQueue.Enqueue("move\\" + pos.x + "\\" + pos.z + "\\" + playerNum);
     }
  }
 
