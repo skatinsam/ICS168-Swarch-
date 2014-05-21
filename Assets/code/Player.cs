@@ -104,7 +104,7 @@ public class Player : MonoBehaviour
 				break;
 			}
 
-			//this.transform.localScale = new Vector3(2,2,2);
+			this.transform.localScale = new Vector3(2,2,2);
 			//score = 0;
 
 		}
