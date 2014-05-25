@@ -27,6 +27,13 @@ public class Player : MonoBehaviour
 
 	public TextMesh scoreDisplay;
 
+	Vector3 lastPos;
+	public bool sendPacket;
+	public double upperThreshold;
+	public double lowerThreshold;
+	public double leftThreshold;
+	public double rightThreshold;
+
 
 	void Start()
 	{
@@ -38,7 +45,7 @@ public class Player : MonoBehaviour
 
 		MoveSpeed = 10f;
 		playerNum = 0;
-
+		sendPacket = false;
         StartCoroutine(sendPosition());
 	}
 	
@@ -53,7 +60,20 @@ public class Player : MonoBehaviour
 
 		if( !AcceptsInput )
 			return;
-		
+
+		//added
+		lastPos = this.transform.position;
+
+		//added
+		if(sendPacket == false)
+		{
+			sendPacket = true;
+			upperThreshold = lastPos.z + 0.3;
+			lowerThreshold = lastPos.z - 0.3;
+			leftThreshold = lastPos.x - 0.3;
+			rightThreshold = lastPos.x + 0.3;
+
+		}
 
 		input = Input.GetAxis( "Vertical" );
 		input2 = Input.GetAxis("Horizontal");	
@@ -62,8 +82,23 @@ public class Player : MonoBehaviour
 	    
         
 
-		this.transform.position = pos;
+
 		scoreDisplay.transform.position = pos;
+
+
+
+
+
+		//added
+		if( (pos.z >= upperThreshold || pos.z <= lowerThreshold 
+		     || pos.x >= rightThreshold || pos.x <= leftThreshold )) //(change != 0 && ((change) >= thresholdMove))// ||((lastPos.z + change) <= lastPos.z - thresholdMove) ) //&&  // 
+		{
+
+			sendPacket = false;
+
+		}
+		this.transform.position = pos;
+
 	}
 
 	void OnTriggerEnter( Collider c )
@@ -73,11 +108,11 @@ public class Player : MonoBehaviour
 		{
 			//StartCoroutine( resetBall());
 
-			print ("\nHIT WALL");
+			//print ("\nHIT WALL");
 
 			//Player p = GameObject.Find("Player").GetComponent<GameProcess>();
-
-			gp.returnSocket().sendQueue.Enqueue("wall\\"+ this.playerNum + "\\" + this.pos.x +"\\"+ this.pos.z); //+ "\\"
+													//+ this.playerNum 
+			gp.returnSocket().sendQueue.Enqueue("wall\\"); 
 
 			gp.returnSocket().sendQueue.Enqueue("score\\" + score);
 			//pos =  Vector3.zero; // notify the server ??
@@ -105,89 +140,42 @@ public class Player : MonoBehaviour
 			}
 
 			this.transform.localScale = new Vector3(2,2,2);
+			this.MoveSpeed = 10;
 			//score = 0;
 
 		}
 		if(c.tag == "Opponent")
 		{
 
-			float oppX = c.transform.position.x;
-			float oppZ = c.transform.position.z;
-			opponent tempOpp = (opponent)c.GetComponent("opponent");
+			//float oppX = c.transform.position.x;
+			//float oppZ = c.transform.position.z;
+			//opponent tempOpp = (opponent)c.GetComponent("opponent");
 
-			gp.returnSocket().sendQueue.Enqueue("hitOpp\\"+ tempOpp.opponentNum +"\\"
-			                                    + tempOpp.transform.localScale.x 
-			                                    +"\\" + oppX +"\\"+ oppZ); 
+			//gp.returnSocket().sendQueue.Enqueue("hitOpp\\"+ tempOpp.opponentNum +"\\"
+			//                                    + tempOpp.transform.localScale.x 
+			//                                    +"\\" + oppX +"\\"+ oppZ); 
 
 		}
 		if(c.tag == "Pellet")
 		{
-			float pellX = c.transform.position.x;
-			float pellZ = c.transform.position.z;
+			//float pellX = c.transform.position.x;
+			//float pellZ = c.transform.position.z;
 			Pellets tempPell = (Pellets)c.GetComponent("Pellets");
 
 			 
-			gp.returnSocket().sendQueue.Enqueue("hitPell\\"+ tempPell.pellNumber +"\\"
-			                                    + tempPell.transform.localScale.x  
-			                                    +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
+			//gp.returnSocket().sendQueue.Enqueue("hitPell\\"+ tempPell.pellNumber +"\\"
+			 //                                   + tempPell.transform.localScale.x  
+			 //                                   +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
 			                                    //+(((gp.dt.AddMinutes(gp.uniClock.Elapsed.Minutes).AddSeconds(gp.uniClock.Elapsed.Seconds).AddMilliseconds(gp.uniClock.Elapsed.Milliseconds)).Ticks)) ); 
 
 
 			int tempPellLoc = gp.pellets.FindIndex(x=> x.pellNumber == tempPell.pellNumber);
 
 			gp.pellets.RemoveAt(tempPellLoc);
-			//gp.pellets.RemoveAt(0); // server will determine who ate it.
+
 			Destroy(c.gameObject);
 
-// his now set when server sends it
-			//print("size of pellet array(AFTER): ----> "+gp.pellets.Count);
-		
-			//Transform tempPell = Instantiate(gp.pell, new Vector3(UnityEngine.Random.Range(-23.5F, 23.5F), 
-			//                                               0, UnityEngine.Random.Range(-12.5F, 14.5F)), Quaternion.identity) as Transform;
-
-			//gp.pellets.Add(tempPell); 
-
-			 //int growSide = UnityEngine.Random.Range(1,10);
-
-			//score += growSize;
-		
-			//this.transform.localScale = new Vector3(growSize,
-			//                                        this.transform.localScale.y,
-			 //                                       growSize);
-
-		/*
-		    if(growSide <= 5)
-			{
-			this.transform.localScale = new Vector3(this.transform.localScale.x+growSize,
-			                                        this.transform.localScale.y,
-			                                       this.transform.localScale.z);
-
-			}
-			else
-			{
-				this.transform.localScale = new Vector3(this.transform.localScale.x,
-				                                        this.transform.localScale.y,
-				                                        this.transform.localScale.z+growSize);
-			}
-		*/
-		/*
-			float speedChange = (MoveSpeed-2);
-
-			if(speedChange < 1)
-			{
-			  MoveSpeed = MoveSpeed * .85F;
-			
-			}
-			else
-			{
-				MoveSpeed = speedChange;
-			}
-		*/
-
 		}
-
-
-
 
 	}
   /*
@@ -210,9 +198,30 @@ public class Player : MonoBehaviour
   */
     IEnumerator sendPosition()
     {
-        yield return new WaitForSeconds(.4f);
-        gp.returnSocket().sendQueue.Enqueue("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
-    }
+	  while ( true )
+	  {
+			
+        yield return new WaitForSeconds(.00000000000001f);
+         
+		 if(playerNum!=0)
+		 {
+			//gp.returnSocket().sendQueue.Enqueue("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
+		 
+			//added
+		///*	
+		    if ( (pos.z >= upperThreshold || pos.z <= lowerThreshold
+				 || pos.x >= rightThreshold || pos.x <= leftThreshold ))
+			{
+
+				gp.returnSocket().SendTCPPacket("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
+					print ("\nSENT MOVE ------> : " + pos.x+" y " + pos.z);
+
+				sendPacket = false;
+			}
+		//*/	
+		 }
+	  }
+   }
  }
 
 

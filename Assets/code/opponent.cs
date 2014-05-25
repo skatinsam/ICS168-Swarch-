@@ -41,21 +41,7 @@ public class opponent : MonoBehaviour
 	void Update()
 	{
 		//scoreDisplay.text = score.ToString();
-		
-		
-		if( resetting )
-			return;
-		
-		
-		//if( !AcceptsInput )
-		//	return;
-		
-		
-		//input = Input.GetAxis( "Vertical" );
-		//input2 = Input.GetAxis("Horizontal");	
-		//pos.z += input * MoveSpeed * Time.deltaTime;
-		//pos.x += input2 *MoveSpeed * Time.deltaTime;	
-		
+
 		pos.z += vert * MoveSpeed * Time.deltaTime;
 		pos.x += horiz *MoveSpeed * Time.deltaTime;	
 		
@@ -65,21 +51,37 @@ public class opponent : MonoBehaviour
 	
 	void OnTriggerEnter( Collider c )
 	{
-	  /*	
+	  ///*	
 		if(c.tag == "Wall")
 		{
-			StartCoroutine( resetBall());
-			
-			print ("\n\nHIT WALL");
-			
-			GameObject p = GameObject.Find("Player");
-			pos =  Vector3.zero;
-			
+
+			switch(this.opponentNum) //(tempClient.clientNumber)
+			{
+			case 1:
+			{
+				this.pos = new Vector3(-17.0f,0f,7.0f);
+				break;
+			}
+			case 2:
+			{
+				this.pos = new Vector3(20.0f,0f,7.0f);
+				break;
+			}
+				
+			case 3:
+			{
+				this.pos = new Vector3(20.0f,0f,-10.0f);
+				break;
+			}
+			default:
+				break;
+			}
+
 			this.transform.localScale = new Vector3(2,2,2);
-			score = 0;
+			
 			
 		}
-		*/
+		//*/
 		if(c.tag == "Pellet")
 		{
 			//print("size of pellet array(BEFORE): " +gp.pellets.Count + " c NAME: " + c.gameObject.name);
@@ -132,22 +134,6 @@ public class opponent : MonoBehaviour
 		 */
 		}
 
-	}
-	IEnumerator resetBall()
-	{
-		// reset position, speed, and direction
-		resetting = true;
-		this.transform.position = Vector3.zero;
-		
-		//currentDir = Vector3.zero;
-		MoveSpeed = 0f;
-		
-		// wait for 3 seconds before starting the round
-		yield return new WaitForSeconds( 0f );
-		
-		Start();
-		
-		resetting = false;
 	}
 	
 }
