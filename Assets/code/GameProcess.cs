@@ -44,6 +44,7 @@ public class GameProcess : MonoBehaviour
 
 	public Player player;
 	public Vector3 initPlayerPos;
+	System.Object thisLock;
 
 	public Stopwatch uniClock; // = new Stopwatch();
 	public DateTime dt; // = new DateTime();
@@ -80,6 +81,8 @@ public class GameProcess : MonoBehaviour
 		tServer = new DateTime();
 		canSendStart = false;
 		totalLat = 0;
+		thisLock = new System.Object();
+
 
 		Stopwatch uniClock = new Stopwatch();
 		DateTime dt = new DateTime();
@@ -160,13 +163,21 @@ public class GameProcess : MonoBehaviour
 	
 	 if(startedGame)
 	 {
+
 		if(socks.recvBuffer.Count > 0 )
-		{
-			
+			{		//if(!(socks.recvBuffer.Peek()).Contains("move"))
+				print("\npeek in Queue **** "+ socks.recvBuffer.Peek());
+			lock(thisLock)
+			{
 			data = (string)socks.recvBuffer.Dequeue();
+					//
+					//	print(" __SPLITDATA__ " + data);
+			}
 
 			splitData = data.Split(delemeter);
 		
+
+
 			if(splitData[0] == "newEntry")
 			{
 				//print ("GOT INTO NEWENTRY _-_-_-_");  
@@ -215,7 +226,6 @@ public class GameProcess : MonoBehaviour
 				}
 			
 			}
-		 //*/
 		    if(splitData[0] == "newPell")
 			{
 					print("got into function ");
@@ -244,9 +254,7 @@ public class GameProcess : MonoBehaviour
 
 					}
 
-					  
-				  //for(int i =1; i < splitData.Length; i = i+3)
-				  //{
+					
 						if(pellets.Exists(x=>x.pellNumber == Convert.ToInt32(splitData[r+3])))
 						{
 							print ("\nSAME PELLET DOES EXIST ::"+ splitData[r+3]);
@@ -260,7 +268,7 @@ public class GameProcess : MonoBehaviour
 							GameObject oldPell = GameObject.Find("pellet"+splitData[r+3]);
 
 							Destroy(oldPell);
-                          //*/
+                         
 						}
 					
 						Transform tempPell = Instantiate(pell, new Vector3(float.Parse(splitData[r+4]), 
@@ -271,12 +279,11 @@ public class GameProcess : MonoBehaviour
 						tempP.pellNumber = Convert.ToInt32(splitData[r+3]);
 						tempP.name = "pellet"+splitData[r+3];
 
-						//int tempPellLoc = pellets.FindIndex(x=>x.pellNumber == Convert.ToInt32(splitData[r+3]));
 
 						print ("\nadded : "+ splitData[r+3] );
 						pellets.Add(tempP ); 
 					
-				  //}  
+				  
 			  }
 
 			}

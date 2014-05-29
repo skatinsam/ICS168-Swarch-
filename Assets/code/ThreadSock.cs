@@ -13,10 +13,11 @@ public class ThreadSock : MonoBehaviour
 	private byte[] streamBuffer;
 	private byte byteBuffer;
 	private byte tempBuffer;
-	private Sockets socks;
+	private Sockets socks = new Sockets();
 	private StreamReader sr;
 	private System.Object thisLock = new System.Object();
-	
+
+
 
 	public ThreadSock (NetworkStream nwsIn, Sockets inSocket )
 	{
@@ -33,21 +34,23 @@ public class ThreadSock : MonoBehaviour
 	{	
 		try
 		{
-			lock( thisLock)
-			{
+
 
 				string line;
 			
 				while ((line = sr.ReadLine()) != null) 
 				{
 					
-					print("Received this <------ " + line);
-					
-					socks.recvBuffer.Enqueue(line);
-					
+			
+				    lock( thisLock)
+				    {
+					    if(!line.Contains("move"))
+						print("Received this <------ " + line);
+					 socks.recvBuffer.Enqueue(line);
+					}
 				}
 				
-			}
+
 
 			
 		}

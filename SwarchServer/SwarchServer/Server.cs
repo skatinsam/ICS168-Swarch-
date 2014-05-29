@@ -633,7 +633,8 @@ namespace SwarchServer
 
             //  currentClientsMove = "";
             //}
-
+          
+         /*
             if (addedNewPellets != "")
             {
                 for (int l = 0; l < clientsEntered.Count; ++l)
@@ -644,6 +645,7 @@ namespace SwarchServer
                 }
                 addedNewPellets = "";
             }
+        */
 
             if (clientsHit != "")
             {
@@ -833,9 +835,11 @@ private class BroadCast
                         // clientIndex = clientsEntered.IndexOf(tempClient);
 
                         cliIndex = clientsEntered.FindIndex(x => x.TCPclient.Client.RemoteEndPoint == tcpClient.Client.RemoteEndPoint);
+                        
                     }
-
-                    // tempClient.clientQueue = new Queue(); 
+                    if (cliIndex == -1 || cliIndex == -999)
+                        Console.WriteLine("client read in not established " + cliIndex);
+                        // tempClient.clientQueue = new Queue(); 
                     clientsEntered[cliIndex].clientQueue = new Queue();
 
                     while (true)
@@ -1131,6 +1135,7 @@ private class ClientGameState
                     // ?? wait to see if another "hit" is on it's way.
                     for (int i = 0; i < gamePellets.Count; ++i)
                     {
+                        int indexC1=0;
 
                         List<Client> tempC1 = new List<Client>();
                         tempC1 = clientsEntered.FindAll(x =>
@@ -1158,7 +1163,7 @@ private class ClientGameState
                             // List<playInfo> orderTempList = (List<playInfo>)tempC1.OrderBy(x => x.timeStamp.Millisecond);
 
 
-                        int indexC1 = clientsEntered.FindIndex(x => x.clientNumber == tempC1[0].clientNumber);
+                         indexC1 = clientsEntered.FindIndex(x => x.clientNumber == tempC1[0].clientNumber);
 
                                     
                             if (clientsEntered[indexC1].clientNumber != 0)
@@ -1195,6 +1200,13 @@ private class ClientGameState
                                     //int indPell = gamePellets.FindIndex(x => x.pellNum == compareGamePlay[i].objectNum);
 
                                     //tempPel
+
+                                    int removePellX = generatedX.FindIndex(x=>x == gamePellets[i].px);
+                                    int removePellY = generatedY.FindIndex(y=>y == gamePellets[i].py);    
+                                
+                                    generatedX.RemoveAt(removePellX);
+                                    generatedY.RemoveAt(removePellY);
+
                                     gamePellets[i].px = NextRanX();
                                     gamePellets[i].py = NextRanY();
                                     //orderTempList
@@ -1204,34 +1216,28 @@ private class ClientGameState
                                     // int clientIndex = clientsEntered.IndexOf(c);
                                     //clientsEntered[clientIndex] = c;
 
-                                    lock (thisLock)
-                                    {
-                                        addedNewPellets = string.Concat(addedNewPellets, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
-                                            clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
-                                            gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py));
+                                    //lock (thisLock)
+                                    //{
+                                            //addedNewPellets = string.Concat(addedNewPellets, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                            //clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
+                                            //gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py));
 
-                                    }
+                                    //}
 
-                                    //playInfo addToResolve = new playInfo();
-                                    //addToResolve.objectNum = compareGamePlay[i].objectNum;
-                                    //addToResolve.compareX = compareGamePlay[i].compareX;
-                                    //addToResolve.compareY = compareGamePlay[i].compareY;
-                                    //resolvedPellets.Add(addToResolve);
+                                    clientsEntered[0].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
+                                gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py);
 
-                                //}
+                                    clientsEntered[1].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
+                                gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py);
+
+                                //add a thrid client if there is one
                                            
                             }
-
-
-                        //  ????       lastProcessRange = compareGamePlay.Count;
-
-
-                           
+   
                     }
-
-
-                    // ???  compareGamePlay.RemoveRange(0, lastProcessRange);
-
+       
                 }
 
 
@@ -1324,7 +1330,7 @@ private class ClientGameState
                                     //&& !resolvedPellets.Exists(x => (x.objectNum == compareGamePlay[i].objectNum)
                                     //                            && (x.compareX == compareGamePlay[i].compareX) && (x.compareY == compareGamePlay[i].compareY)))
                                     //{
-
+                                /*
                                     double reset1X = 0;
                                     double reset1Y = 0;
 
@@ -1382,23 +1388,23 @@ private class ClientGameState
                                         default:
                                             break;
                                     }
-
+                                 */
 
                                     if (clientsEntered[indexC].playerSize == clientsEntered[i].playerSize)//compareGamePlay[i].size)
                                     {
 
 
                                         //reset both and loose their points
-                                        clientsEntered[indexC].posX = reset1X;
-                                        clientsEntered[indexC].posY = reset1Y;
+                                        clientsEntered[indexC].posX = randomGen.Next(-23, 23); //reset1X;
+                                        clientsEntered[indexC].posY = randomGen.Next(-12, 14);  //reset1Y;
                                         clientsEntered[indexC].playerSpeed = 10;
                                         clientsEntered[indexC].playerSize = 2;
 
                                         //int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum2);
 
                                         clientsEntered[i].playerSize = 2; //compareGamePlay[i].size;
-                                        clientsEntered[i].posX = reset2X;
-                                        clientsEntered[i].posY = reset2Y;
+                                        clientsEntered[i].posX = randomGen.Next(-23, 23); //reset2X;
+                                        clientsEntered[i].posY = randomGen.Next(-12, 14);
                                         clientsEntered[i].playerSpeed = 10;
 
                                         //clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
@@ -1429,8 +1435,8 @@ private class ClientGameState
 
                                         clientsEntered[i].playerSize = 2;
                                         clientsEntered[i].playerSpeed = 10;
-                                        clientsEntered[i].posX = reset2X;
-                                        clientsEntered[i].posY = reset2Y;
+                                        clientsEntered[i].posX = randomGen.Next(-23, 23);
+                                        clientsEntered[i].posY = randomGen.Next(-12, 14);
 
                                         // clientsEntered[indexC].clientNumber,
                                         //clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
@@ -1462,8 +1468,8 @@ private class ClientGameState
 
                                         //areGamePlay[i].size;
 
-                                        clientsEntered[indexC].posX = reset1X;
-                                        clientsEntered[indexC].posY = reset1Y;
+                                        clientsEntered[indexC].posX = randomGen.Next(-23, 23);
+                                        clientsEntered[indexC].posY = randomGen.Next(-12, 14);
                                         clientsEntered[indexC].playerSize = 2;
                                         clientsEntered[indexC].playerSpeed = 10;
 
@@ -1495,311 +1501,6 @@ private class ClientGameState
                         }
                     }
 
-
-
-
-
-                // PASTE HERE ------------------------------------------------------------------------------------------------------------------------------------------------ 
-                /*
-                if (compareGamePlay.Count != 0)
-                {
-
-                    //IEnumerable
-
-                    //  List<playInfo> orderTempList = (List<playInfo>)compareGamePlay.OrderBy(x => x.timeStamp.Millisecond);
-
-                    // if ((newClientaddedNum.Find(x => x == clientsEntered[l].clientNumber)) != 0 )
-
-
-                    //List<playInfo> tempList = compareGamePlay.FindAll((x => x.objectNum == i+1) );
-
-                    // /* 
-                    // ?? wait to see if another "hit" is on it's way.
-                    for (int i = 0; i < compareGamePlay.Count; ++i)
-                    {
-
-                        if (compareGamePlay[i].hitType == "hitPell")
-                        {
-
-                            //orderTempList[i]
-                            //Client c =  clientsEntered.Find(x => x.clientNumber == compareGamePlay[i].clientsNum);  
-
-                            int indexC = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
-
-                            //c
-                            if (clientsEntered[indexC].clientNumber != 0)
-                            {
-                                            
-                                //orderTempList[i] <--> all compareGamePlay[i]
-                                //c <--> clientsEntered[indexC]
-                                if ((clientsEntered[indexC].posX + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareX - (compareGamePlay[i].size / 2))
-                                    || (clientsEntered[indexC].posX - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareX + (compareGamePlay[i].size / 2))
-                                    || (clientsEntered[indexC].posY + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareY - (compareGamePlay[i].size / 2))
-                                    || (clientsEntered[indexC].posY - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareY + (compareGamePlay[i].size / 2))
-                                    && !resolvedPellets.Exists(x => (x.objectNum == compareGamePlay[i].objectNum)
-                                        && (x.compareX == compareGamePlay[i].compareX) && (x.compareY == compareGamePlay[i].compareY)))
-                                {
-                                    double speedChange = (clientsEntered[indexC].playerSpeed - 2);
-
-                                    if (speedChange < 1)
-                                    {
-                                        clientsEntered[indexC].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
-
-                                    }
-                                    else
-                                    {
-                                        clientsEntered[indexC].playerSpeed = speedChange;
-                                    }
-
-                                    // clientsEntered[indexC].sw.WriteLine("getPell\\{0}\\{1}", (clientsEntered[indexC].playerSize + growSize), clientsEntered[indexC].playerSpeed);
-                                    //, (((dt.AddMinutes(uniClock.Elapsed.Minutes).AddSeconds(uniClock.Elapsed.Seconds).AddMilliseconds(uniClock.Elapsed.Milliseconds)).Ticks))
-
-
-                                    clientsEntered[indexC].playerSize = clientsEntered[indexC].playerSize + growSize;
-                                    //orderTempList[i]
-                                    //pellet tempPel = gamePellets.Find(x => x.pellNum == compareGamePlay[i].objectNum);
-                                    //int indexPel = gamePellets.IndexOf(tempPel);
-
-                                    int indPell = gamePellets.FindIndex(x => x.pellNum == compareGamePlay[i].objectNum);
-
-                                    //tempPel
-                                    gamePellets[indPell].px = NextRanX();
-                                    gamePellets[indPell].py = NextRanY();
-                                    //orderTempList
-                                    // gamePellets[indPell].pellNum = compareGamePlay[i].objectNum;
-                                    //gamePellets[indexPel] = tempPel;
-
-                                    // int clientIndex = clientsEntered.IndexOf(c);
-                                    //clientsEntered[clientIndex] = c;
-
-                                    lock (thisLock)
-                                    {
-                                        addedNewPellets = string.Concat(addedNewPellets, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
-                                            clientsEntered[indexC].clientNumber, (clientsEntered[indexC].playerSize), clientsEntered[indexC].playerSpeed,
-                                            gamePellets[indPell].pellNum, gamePellets[indPell].px, gamePellets[indPell].py));
-
-                                    }
-                                    playInfo addToResolve = new playInfo();
-                                    addToResolve.objectNum = compareGamePlay[i].objectNum;
-                                    addToResolve.compareX = compareGamePlay[i].compareX;
-                                    addToResolve.compareY = compareGamePlay[i].compareY;
-                                    //orderTempList[i]
-                                    resolvedPellets.Add(addToResolve);
-
-                                }
-                                else
-                                {
-                                    // clientsEntered[indexC].sw.WriteLine("missPell"); //+ "\\"
-                                    //+ (((dt.AddMinutes(uniClock.Elapsed.Minutes).AddSeconds(uniClock.Elapsed.Seconds).AddMilliseconds(uniClock.Elapsed.Milliseconds)).Ticks)) );
-                                }
-                            }
-
-
-                            lastProcessRange = compareGamePlay.Count;
-
-
-                        }
-                        ///*
-                        else if (compareGamePlay[i].hitType == "hitOpp")
-                        {
-                            Console.WriteLine("resolvePel count: {0} ", resolvedPellets.Count);
-                            for (int w = 0; w < resolvedPellets.Count; ++w)
-                            {
-
-                                Console.WriteLine("\nResolved pellets == clin#1 {0}, clin#2 {1}, Obj# {2} ",
-                                    resolvedPellets[i].clientsNum, resolvedPellets[i].clientsNum2, resolvedPellets[i].objectNum);
-                            }
-
-
-                            int indexC = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum);
-
-
-                            if (clientsEntered[indexC].clientNumber != 0)
-                            {
-                                //orderTempList[i] <--> all compareGamePlay[i]
-                                //c <--> clientsEntered[indexC]
-                                if ((clientsEntered[indexC].posX + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareX - (compareGamePlay[i].size / 2))
-                                || (clientsEntered[indexC].posX - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareX + (compareGamePlay[i].size / 2))
-                                || (clientsEntered[indexC].posY + (clientsEntered[indexC].playerSize / 2) >= compareGamePlay[i].compareY - (compareGamePlay[i].size / 2))
-                                || (clientsEntered[indexC].posY - (clientsEntered[indexC].playerSize / 2) <= compareGamePlay[i].compareY + (compareGamePlay[i].size / 2)))
-                                //&& !resolvedPellets.Exists(x => (x.objectNum == compareGamePlay[i].objectNum)
-                                //                            && (x.compareX == compareGamePlay[i].compareX) && (x.compareY == compareGamePlay[i].compareY)))
-                                {
-
-                                    double reset1X = 0;
-                                    double reset1Y = 0;
-
-                                    double reset2X = 0;
-                                    double reset2Y = 0;
-
-                                    switch (clientsEntered[indexC].clientNumber)
-                                    {
-                                        case 1:
-                                            {
-                                                reset1X = -17;
-                                                reset1Y = 7;
-                                                break;
-                                            }
-                                        case 2:
-                                            {
-                                                reset1X = 20;
-                                                reset1Y = 7;
-
-                                                break;
-                                            }
-
-                                        case 3:
-                                            {
-                                                reset1X = 20;
-                                                reset1Y = -10;
-                                                break;
-                                            }
-                                        default:
-                                            break;
-                                    }
-
-                                    switch (compareGamePlay[i].clientsNum)
-                                    {
-                                        case 1:
-                                            {
-                                                reset2X = -17;
-                                                reset2Y = 7;
-                                                break;
-                                            }
-                                        case 2:
-                                            {
-                                                reset2X = 20;
-                                                reset2Y = 7;
-
-                                                break;
-                                            }
-
-                                        case 3:
-                                            {
-                                                reset2X = 20;
-                                                reset2Y = -10;
-                                                break;
-                                            }
-                                        default:
-                                            break;
-                                    }
-
-
-                                    if (clientsEntered[indexC].playerSize == compareGamePlay[i].size)
-                                    {
-                                                    
-                                                    
-                                        //reset both and loose their points
-                                        clientsEntered[indexC].posX = reset1X;
-                                        clientsEntered[indexC].posY = reset1Y;
-                                        clientsEntered[indexC].playerSpeed = 10;
-                                        clientsEntered[indexC].playerSize = 2;
-
-                                        int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum2);
-
-                                        clientsEntered[tempi].playerSize = 2; //compareGamePlay[i].size;
-                                        clientsEntered[tempi].posX = reset2X;
-                                        clientsEntered[tempi].posY = reset2Y;
-                                        clientsEntered[tempi].playerSpeed = 10;
-
-                                        clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
-                                                clientsEntered[indexC].clientNumber, 2, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
-                                                    clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEntered[tempi].playerSpeed,
-                                                    clientsEntered[tempi].posX, clientsEntered[tempi].posY));
-
-                                    }
-                                    else if (clientsEntered[indexC].playerSize > compareGamePlay[i].size)
-                                    {
-                                                    
-                                        double speedChange = (clientsEntered[indexC].playerSpeed - 2);
-
-                                        if (speedChange < 1)
-                                        {
-                                            clientsEntered[indexC].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
-
-                                        }
-                                        else
-                                        {
-                                            clientsEntered[indexC].playerSpeed = speedChange;
-                                        }
-
-
-                                        clientsEntered[indexC].playerSize += compareGamePlay[i].size;
-
-                                        int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum2);
-
-                                        clientsEntered[tempi].playerSize = 2;
-                                        clientsEntered[tempi].playerSpeed = 10;
-                                        clientsEntered[tempi].posX = reset2X;
-                                        clientsEntered[tempi].posY = reset2Y;
-
-                                        // clientsEntered[indexC].clientNumber,
-                                        clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
-                                                clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
-                                                clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, clientsEntered[tempi].playerSize, clientsEntered[tempi].playerSpeed,
-                                                clientsEntered[tempi].posX, clientsEntered[tempi].posY));
-                                                    
-                                                   
-                                    }
-                                    else if (clientsEntered[indexC].playerSize < compareGamePlay[i].size)
-                                    {
-
-                                        int tempi = clientsEntered.FindIndex(x => x.clientNumber == compareGamePlay[i].clientsNum2);
-
-                                        clientsEntered[tempi].playerSize += clientsEntered[indexC].playerSize;
-
-                                        double speedChange = (clientsEntered[tempi].playerSpeed - 2);
-
-                                        if (speedChange < 1)
-                                        {
-                                            clientsEntered[tempi].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
-
-                                        }
-                                        else
-                                        {
-                                            clientsEntered[tempi].playerSpeed = speedChange;
-                                        }
-
-
-                                        //areGamePlay[i].size;
-
-                                        clientsEntered[indexC].posX = reset1X;
-                                        clientsEntered[indexC].posY = reset1Y;
-                                        clientsEntered[indexC].playerSize = 2;
-                                        clientsEntered[indexC].playerSpeed = 10;
-
-                                        clientsHit = string.Concat(clientsHit, string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
-                                                clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
-                                                clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, clientsEntered[tempi].playerSize, clientsEntered[tempi].playerSpeed,
-                                                clientsEntered[tempi].posX, clientsEntered[tempi].posY));
-
-                                            
-                                    }
-
-
-                                    //playInfo addToResolve = new playInfo();
-                                    //addToResolve.objectNum = compareGamePlay[i].objectNum;
-                                    //addToResolve.compareX = compareGamePlay[i].compareX;
-                                    //addToResolve.compareY = compareGamePlay[i].compareY;
-
-                                    //resolvedPellets.Add(addToResolve);
-
-                                }
-
-                            }
-
-                            //lastProcessRange = compareGamePlay.Count;
-
-                        }
-                                    
-                    }
-
-
-                    compareGamePlay.RemoveRange(0, lastProcessRange);
-
-                }
-                */
-                // PASTE HERE (end)------------------------------------------------------------------------------------------------------------------------------------------------ 
 
                 resolvedPellets.Clear();
 

@@ -46,7 +46,8 @@ public class Player : MonoBehaviour
 		MoveSpeed = 10f;
 		playerNum = 0;
 		sendPacket = false;
-        StartCoroutine(sendPosition());
+       
+		//StartCoroutine(sendPosition());
 	}
 	
 	void Update()
@@ -93,7 +94,7 @@ public class Player : MonoBehaviour
 		if( (pos.z >= upperThreshold || pos.z <= lowerThreshold 
 		     || pos.x >= rightThreshold || pos.x <= leftThreshold )) //(change != 0 && ((change) >= thresholdMove))// ||((lastPos.z + change) <= lastPos.z - thresholdMove) ) //&&  // 
 		{
-
+			gp.returnSocket().sendQueue.Enqueue("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
 			sendPacket = false;
 
 		}
@@ -168,12 +169,11 @@ public class Player : MonoBehaviour
 			 //                                   +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
 			                                    //+(((gp.dt.AddMinutes(gp.uniClock.Elapsed.Minutes).AddSeconds(gp.uniClock.Elapsed.Seconds).AddMilliseconds(gp.uniClock.Elapsed.Milliseconds)).Ticks)) ); 
 
-
-			int tempPellLoc = gp.pellets.FindIndex(x=> x.pellNumber == tempPell.pellNumber);
-
-			gp.pellets.RemoveAt(tempPellLoc);
-
-			Destroy(c.gameObject);
+  
+// CLIENT SIDE REMOVEAL OF PELLETS
+			//int tempPellLoc = gp.pellets.FindIndex(x=> x.pellNumber == tempPell.pellNumber);
+			//gp.pellets.RemoveAt(tempPellLoc);
+			//Destroy(c.gameObject);
 
 		}
 
@@ -196,6 +196,7 @@ public class Player : MonoBehaviour
 		resetting = false;
 	}
   */
+/*
     IEnumerator sendPosition()
     {
 	  while ( true )
@@ -208,20 +209,21 @@ public class Player : MonoBehaviour
 			//gp.returnSocket().sendQueue.Enqueue("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
 		 
 			//added
-		///*	
+
 		    if ( (pos.z >= upperThreshold || pos.z <= lowerThreshold
 				 || pos.x >= rightThreshold || pos.x <= leftThreshold ))
 			{
 
 				gp.returnSocket().SendTCPPacket("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
-					print ("\nSENT MOVE ------> : " + pos.x+" y " + pos.z);
+					//print ("\nSENT MOVE ------> : " + pos.x+" y " + pos.z);
 
 				sendPacket = false;
 			}
-		//*/	
+
 		 }
 	  }
    }
+*/
  }
 
 
