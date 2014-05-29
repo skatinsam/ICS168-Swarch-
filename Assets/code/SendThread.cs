@@ -39,8 +39,7 @@ public class SendThread : MonoBehaviour
 		///*
 		while(socks.connected)
 		{ 
-			lock(thisLock)
-			{
+
 				
 				try
 				{ 
@@ -48,14 +47,19 @@ public class SendThread : MonoBehaviour
 					
 					while(socks.sendQueue.Count > 0)
 					{
-						
-						string sendout = (string)socks.sendQueue.Dequeue();
-						
+					string sendout= "";
+					lock(thisLock)
+					{			
+						sendout = (string)socks.sendQueue.Dequeue();
+					}	
 						//if(sendout)
 						//sendoutSubstring(1,3); 
 						// if( starts with "start" )
 						//Thread.Sleep(100);
+
 						sw.WriteLine(sendout); //(toSend);
+
+						if(!sendout.Contains("move"))
 						print ("\nSENT OUT(thread) ------>  " + sendout);
 						
 					}	
@@ -64,7 +68,7 @@ public class SendThread : MonoBehaviour
 				{
 					print ( ex.Message + ": On SEND OUT (thread)" );
 				}	
-			}
+			
 		}
 		//*/
 	}

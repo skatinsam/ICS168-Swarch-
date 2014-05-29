@@ -44,6 +44,7 @@ public class GameProcess : MonoBehaviour
 
 	public Player player;
 	public Vector3 initPlayerPos;
+	System.Object thisLock;
 
 	public Stopwatch uniClock; // = new Stopwatch();
 	public DateTime dt; // = new DateTime();
@@ -80,6 +81,8 @@ public class GameProcess : MonoBehaviour
 		tServer = new DateTime();
 		canSendStart = false;
 		totalLat = 0;
+		thisLock = new System.Object();
+
 
 		Stopwatch uniClock = new Stopwatch();
 		DateTime dt = new DateTime();
@@ -160,13 +163,21 @@ public class GameProcess : MonoBehaviour
 	
 	 if(startedGame)
 	 {
+
 		if(socks.recvBuffer.Count > 0 )
-		{
-			
+			{		//if(!(socks.recvBuffer.Peek()).Contains("move"))
+				print("\npeek in Queue **** "+ socks.recvBuffer.Peek());
+			lock(thisLock)
+			{
 			data = (string)socks.recvBuffer.Dequeue();
+					//
+					//	print(" __SPLITDATA__ " + data);
+			}
 
 			splitData = data.Split(delemeter);
 		
+
+
 			if(splitData[0] == "newEntry")
 			{
 				//print ("GOT INTO NEWENTRY _-_-_-_");  
@@ -193,15 +204,15 @@ public class GameProcess : MonoBehaviour
 				}
 
 			}
-			else if(splitData[0] == "move")
+			if(splitData[0] == "move")
 			{
 				for(int i=1; i<splitData.Length; i=i+3)
 				{
 
 					if(Convert.ToInt32(splitData[i+2]) == player.playerNum) 
 					{
-							player.transform.position = new Vector3(float.Parse(splitData[i]),0f,float.Parse(splitData[i+1]));
-						
+							//player.transform.position = new Vector3(float.Parse(splitData[i]),0f,float.Parse(splitData[i+1]));
+							//player.pos = new Vector3(float.Parse(splitData[i]),0f,float.Parse(splitData[i+1]));
 							
 					}
 					else
@@ -215,10 +226,9 @@ public class GameProcess : MonoBehaviour
 				}
 			
 			}
-		 //*/
-			else if(splitData[0] == "newPell")
+		    if(splitData[0] == "newPell")
 			{
-
+					print("got into function ");
 			  for(int r = 1; r< splitData.Length;  r=r+6)
 		      {
 				    if(Convert.ToInt32(splitData[r]) == player.playerNum)
@@ -244,21 +254,21 @@ public class GameProcess : MonoBehaviour
 
 					}
 
-					  
-				  //for(int i =1; i < splitData.Length; i = i+3)
-				  //{
+					
 						if(pellets.Exists(x=>x.pellNumber == Convert.ToInt32(splitData[r+3])))
 						{
 							print ("\nSAME PELLET DOES EXIST ::"+ splitData[r+3]);
 						   ///*
-							int tempPellLoc1 = pellets.FindIndex(x=> x.pellNumber == Convert.ToInt32(splitData[r+4]));
-							
+							int tempPellLoc1 = pellets.FindIndex(x=> x.pellNumber == Convert.ToInt32(splitData[r+3]));
+
+							print("find index :" + tempPellLoc1);
+
 							pellets.RemoveAt(tempPellLoc1);
 
-							GameObject oldPell = GameObject.Find("pellet"+splitData[r+4]);
+							GameObject oldPell = GameObject.Find("pellet"+splitData[r+3]);
 
 							Destroy(oldPell);
-                          //*/
+                         
 						}
 					
 						Transform tempPell = Instantiate(pell, new Vector3(float.Parse(splitData[r+4]), 
@@ -269,21 +279,20 @@ public class GameProcess : MonoBehaviour
 						tempP.pellNumber = Convert.ToInt32(splitData[r+3]);
 						tempP.name = "pellet"+splitData[r+3];
 
-						//int tempPellLoc = pellets.FindIndex(x=>x.pellNumber == Convert.ToInt32(splitData[r+3]));
 
-						//print ("tempPellLoc " );
+						print ("\nadded : "+ splitData[r+3] );
 						pellets.Add(tempP ); 
 					
-				  //}  
+				  
 			  }
 
 			}
-			else if (splitData[0] == "score")
+			if (splitData[0] == "score")
 			{
 				print("\nGOT TO UPDATE SCORE TO ::" + splitData[1]);
 				player.totalScore = Convert.ToInt32(splitData[1]);
 			}
-			else if(splitData[0] == "pH")
+			if(splitData[0] == "pH")
 			{
 			   /*
 clientsEntered[indexC].clientNumber, 2, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
@@ -305,10 +314,17 @@ clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEnter
 				   player.MoveSpeed = float.Parse( splitData[r+2]);
 				
 						
-							player.transform.position = new Vector3(float.Parse(splitData[r+3]),
-							                                        player.transform.position.y,
-							                                        float.Parse(splitData[r+4]));		
-			    
+							//player.transform.position = new Vector3(float.Parse(splitData[r+3]),
+							 //                                       player.transform.position.y,
+							  //                                      float.Parse(splitData[r+4]));		
+			    				
+
+							//**** USE PLAYER.POS ALSO FOR OPPONENTS
+
+							player.pos = new Vector3(float.Parse(splitData[r+3]),
+				                                      player.transform.position.y,
+				                                      float.Parse(splitData[r+4]));
+
 						
 					//  UPDATE THE OPPONENT //
 					
@@ -322,10 +338,14 @@ clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEnter
 					
 					tempClient.MoveSpeed = float.Parse( splitData[r+7]);
 					
-					tempClient.transform.position = new Vector3(float.Parse(splitData[r+8]),
-					                                            tempClient.transform.position.y,
-					                                            float.Parse(splitData[r+9]));
+					//tempClient.transform.position = new Vector3(float.Parse(splitData[r+8]),
+					//                                            tempClient.transform.position.y,
+					//                                            float.Parse(splitData[r+9]));
 						
+							tempClient.pos = new Vector3(float.Parse(splitData[r+8]),
+							                             tempClient.transform.position.y,
+							                              float.Parse(splitData[r+9]));
+
 						
 			    }
 				else
@@ -340,10 +360,14 @@ clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEnter
 					
 					tempClient.MoveSpeed = float.Parse( splitData[r+2]);
 					
-					tempClient.transform.position = new Vector3(float.Parse(splitData[r+3]),
+					//tempClient.transform.position = new Vector3(float.Parse(splitData[r+3]),
+					//                                            tempClient.transform.position.y,
+					//                                            float.Parse(splitData[r+4]));
+
+
+					tempClient.pos = new Vector3(float.Parse(splitData[r+3]),
 					                                            tempClient.transform.position.y,
 					                                            float.Parse(splitData[r+4]));
-
 
 
 							//  UPDATE THE PLAYER //
@@ -355,7 +379,11 @@ clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEnter
 					player.MoveSpeed = float.Parse( splitData[r+7]);
 					
 					
-					player.transform.position = new Vector3(float.Parse(splitData[r+8]),
+					//player.transform.position = new Vector3(float.Parse(splitData[r+8]),
+					//                                        player.transform.position.y,
+					//                                        float.Parse(splitData[r+9]));
+
+					player.pos = new Vector3(float.Parse(splitData[r+8]),
 					                                        player.transform.position.y,
 					                                        float.Parse(splitData[r+9]));
 
@@ -380,8 +408,8 @@ clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEnter
 	
 	public void send(string toSend )
 	{
-		
-		//socks.SendTCPPacket(toSend);
+		print ("\nsent through GP ");
+		socks.SendTCPPacket(toSend);
 		
 	}
 	
