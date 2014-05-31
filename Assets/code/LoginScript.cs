@@ -84,12 +84,19 @@ public class LoginScript : MonoBehaviour
                 }
                 else
                 {
-					gameProcess.returnSocket().sendQueue.Enqueue("userAndPass\\"
-					                                    + username +"\\"
-					                                    + hash(password) );
+                    if (password.Length < 7)
+                    {
+                        guiT.text = "Password must be 8 or more characters ";
+                        Debug.Log("Please try again");
+                    }
+                    else
+                    {
+                        gameProcess.returnSocket().sendQueue.Enqueue("userAndPass\\"
+                                                            + username + "\\"
+                                                            + hash(password));
 
-                     loginEntered = true;
-
+                        loginEntered = true;
+                    }
 				}
 
 			}
