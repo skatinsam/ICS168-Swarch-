@@ -63,7 +63,7 @@ namespace SwarchServer
             }
             else if (table.Equals("scores"))
             {
-                insert = String.Format("INSERT INTO {0}('user', 'score') VALUES('{1}', '{2}')", table, user, info);
+                insert = String.Format("INSERT INTO {0}('name', 'totalscore', 'localhighscore') VALUES('{1}', '{2}', '0')", table, user, info);
             }
             else
             {
@@ -96,10 +96,16 @@ namespace SwarchServer
             String person = "";
             if(table.Equals("scores"))
             {
-                person = String.Format("user = '{0}'", user);
-                update = String.Format("score = '{0}'", info);
+                person = String.Format("name = '{0}'", user);
+                update = String.Format("totalscore = '{0}'", info);
             }
-            else if(table.Equals("users"))
+            else if (table.Equals("scores2"))
+            {
+                table = "scores";
+                person = String.Format("name = '{0}'", user);
+                update = String.Format("localhighscore = '{0}'", info);
+            }
+            else if (table.Equals("users"))
             {
                 person = String.Format("name = '{0}'", user);
                 update = String.Format("pass = '{0}'", info);
@@ -170,15 +176,20 @@ namespace SwarchServer
         //Return new score
         public int updateScore(String user, int score)
         {
-
-            String query = String.Format("SELECT user, score FROM scores WHERE user='{0}'", user);
+            String query = String.Format("SELECT user, totalscore, localhighscore FROM scores WHERE user='{0}'", user);
             DataTable result = runQuery(query);
-            String s = result.Rows[0]["score"].ToString();
-
+            String s = result.Rows[0]["totalscore"].ToString();
+            String l = result.Rows[0]["localhighscore"].ToString();
             int si = Int32.Parse(s);
+            int la = Int32.Parse(l);
             int newScore = si + score;
 
             update("scores", user, newScore.ToString());
+
+            if (score > si)
+            {
+                update("scores2", user, score.ToString());
+            }
 
             return newScore;
         }
