@@ -69,10 +69,10 @@ public class Player : MonoBehaviour
 		if(sendPacket == false)
 		{
 			sendPacket = true;
-			upperThreshold = lastPos.z + 0.3;
-			lowerThreshold = lastPos.z - 0.3;
-			leftThreshold = lastPos.x - 0.3;
-			rightThreshold = lastPos.x + 0.3;
+			upperThreshold = lastPos.z + 0.4;
+			lowerThreshold = lastPos.z - 0.4;
+			leftThreshold = lastPos.x - 0.4;
+			rightThreshold = lastPos.x + 0.4;
 
 		}
 
@@ -95,6 +95,7 @@ public class Player : MonoBehaviour
 		     || pos.x >= rightThreshold || pos.x <= leftThreshold )) //(change != 0 && ((change) >= thresholdMove))// ||((lastPos.z + change) <= lastPos.z - thresholdMove) ) //&&  // 
 		{
 			gp.returnSocket().sendQueue.Enqueue("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
+			//gp.socks.sendQueue.Enqueue("move\\" + playerNum + "\\" + pos.x + "\\" + pos.z);
 			sendPacket = false;
 
 		}
@@ -113,7 +114,7 @@ public class Player : MonoBehaviour
 
 			//Player p = GameObject.Find("Player").GetComponent<GameProcess>();
 													//+ this.playerNum 
-			gp.returnSocket().sendQueue.Enqueue("wall\\"); 
+			//gp.returnSocket().sendQueue.Enqueue("wall\\"); 
 
 			gp.returnSocket().sendQueue.Enqueue("score\\" + score);
 			//pos =  Vector3.zero; // notify the server ??
@@ -153,20 +154,20 @@ public class Player : MonoBehaviour
 			//opponent tempOpp = (opponent)c.GetComponent("opponent");
 
 			//gp.returnSocket().sendQueue.Enqueue("hitOpp\\"+ tempOpp.opponentNum +"\\"
-			//                                    + tempOpp.transform.localScale.x 
-			//                                    +"\\" + oppX +"\\"+ oppZ); 
+			 //                                   + tempOpp.transform.localScale.x 
+			 //                                   +"\\" + oppX +"\\"+ oppZ); 
 
 		}
 		if(c.tag == "Pellet")
 		{
-			//float pellX = c.transform.position.x;
-			//float pellZ = c.transform.position.z;
+			float pellX = c.transform.position.x;
+			float pellZ = c.transform.position.z;
 			Pellets tempPell = (Pellets)c.GetComponent("Pellets");
 
 			 
-			//gp.returnSocket().sendQueue.Enqueue("hitPell\\"+ tempPell.pellNumber +"\\"
-			 //                                   + tempPell.transform.localScale.x  
-			 //                                   +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
+			gp.returnSocket().sendQueue.Enqueue("hitPell\\"+ tempPell.pellNumber +"\\"
+			                                    + tempPell.transform.localScale.x  
+			                                    +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
 			                                    //+(((gp.dt.AddMinutes(gp.uniClock.Elapsed.Minutes).AddSeconds(gp.uniClock.Elapsed.Seconds).AddMilliseconds(gp.uniClock.Elapsed.Milliseconds)).Ticks)) ); 
 
   

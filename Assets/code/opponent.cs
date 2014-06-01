@@ -78,7 +78,7 @@ public class opponent : MonoBehaviour
 			}
 
 			this.transform.localScale = new Vector3(2,2,2);
-			
+			this.MoveSpeed = 10;
 			
 		}
 		//*/
@@ -87,8 +87,8 @@ public class opponent : MonoBehaviour
 			//print("size of pellet array(BEFORE): " +gp.pellets.Count + " c NAME: " + c.gameObject.name);
 
 			Pellets tempPell = (Pellets)c.GetComponent("Pellets");
-			gp.pellets.Remove(tempPell);
-			Destroy(c.gameObject);
+			//gp.pellets.Remove(tempPell);
+			//Destroy(c.gameObject);
 
 			//gp.pellets.RemoveAt(0); //(Convert.ToInt32(c.gameObject.name));
 

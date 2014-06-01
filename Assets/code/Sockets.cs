@@ -8,11 +8,12 @@ using System.Net;
 using System;
 using System.Diagnostics;
 using System.Threading;
-
+using  System.Collections.Generic;
+[System.Serializable]
 public class Sockets : MonoBehaviour {
 
 
-	const string SERVER_LOCATION = "169.234.48.194";  //<-- **** CHANGE for every connection to internet 
+	const string SERVER_LOCATION = "128.195.75.157";  //<-- **** CHANGE for every connection to internet 
 	
 	const int SERVER_PORT = 4040; //YOUR PORT NUMBER; //FILL THESE OUT FOR YOUR OWN SERVER
 	
@@ -31,7 +32,8 @@ public class Sockets : MonoBehaviour {
 	public Thread ts =null;
 	
 	protected static bool threadState = false;
-	
+
+
 	public Queue recvBuffer;
 	public Queue sendQueue;
 	
@@ -42,7 +44,6 @@ public class Sockets : MonoBehaviour {
 		recvBuffer = new Queue();
 		sendQueue = new Queue();
 
-		
 	}
 	
 	public bool Connect ()

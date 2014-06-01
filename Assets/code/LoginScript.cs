@@ -27,8 +27,12 @@ public class LoginScript : MonoBehaviour
 		connectSuccess = false;
 		failedConnection = false;
 		gameProcess = GameObject.Find("GameProcess").GetComponent<GameProcess>();
+		//GameObject thread = GameObject.Find("socketHolder"); 
+		//DontDestroyOnLoad(thread);
+
 		DontDestroyOnLoad(gameProcess);
 		DontDestroyOnLoad(guiT);
+
 		canTryLogin = false;
 
         md5 = MD5.Create();
@@ -148,7 +152,13 @@ public class LoginScript : MonoBehaviour
 				gameProcess.initPlayerPos = new Vector3(float.Parse(splitData[2]),0,float.Parse(splitData[3]));
 
 
-				for(int i = 4; i< splitData.Length; ++i)
+				//4-7 wall bounds for game ==> // 0-left,1-right,2-up,3-down
+				gameProcess.levelBounds[0]= Convert.ToDouble(splitData[4]);
+				gameProcess.levelBounds[1]= Convert.ToDouble(splitData[5]);
+				gameProcess.levelBounds[2]= Convert.ToDouble(splitData[6]);
+				gameProcess.levelBounds[3]= Convert.ToDouble(splitData[7]);
+
+				for(int i = 8; i< splitData.Length; ++i)
 				{
 					gameProcess.pelletsLocation.Add(float.Parse(splitData[i])); 
 				}
