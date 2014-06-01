@@ -459,7 +459,7 @@ namespace SwarchServer
                                  List<Client> collideList2 = new List<Client>();
 
 
-                                 collideList2 = clientsEntered.FindAll(x => (x.clientNumber != clientsEntered[hitCheckClient].clientNumber) &&
+                                 collideList2 = clientsEntered.FindAll(x => (x.clientNumber != clientsEntered[hitCheckClient].clientNumber) && (x.playerSize != clientsEntered[hitCheckClient].playerSize)&&
                                      // compares top left corner
                                     (((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6))
                                      && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)))
@@ -644,7 +644,7 @@ namespace SwarchServer
                                                  clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
                                          }
 
-                                         Thread.Sleep(100);
+                                         Thread.Sleep(200);
                                          clientsEntered[i].clientQueue.Clear();
 
                                          /*
