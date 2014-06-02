@@ -13,7 +13,7 @@ public class ThreadSock : MonoBehaviour
 	private byte[] streamBuffer;
 	private byte byteBuffer;
 	private byte tempBuffer;
-	private Sockets socks = new Sockets();
+    private Sockets socks; //new Sockets();
 	private StreamReader sr;
 	private System.Object thisLock = new System.Object();
 

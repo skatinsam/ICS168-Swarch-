@@ -2,7 +2,11 @@ fileFormatVersion: 2
 guid: 16993237ab83a064f8ad0f0258298796
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - pell: {fileID: 400000, guid: 2f56947233b8c8740a58704f9961ba84, type: 2}
+  - opponents: {fileID: 400000, guid: 442e915cd6a2888468adbd9fac5be36e, type: 2}
+  - player: {instanceID: 0}
+  - guiTGP: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

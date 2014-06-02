@@ -171,7 +171,7 @@ public class GameProcess : MonoBehaviour
 			{
 			data = (string)socks.recvBuffer.Dequeue();
 					//
-					//	print(" __SPLITDATA__ " + data);
+						print(" __SPLITDATA__ " + data);
 			}
 
 			splitData = data.Split(delemeter);
