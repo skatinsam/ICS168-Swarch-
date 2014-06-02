@@ -56,11 +56,17 @@ namespace SwarchServer
 
         protected class wallBound
         {
-            public double rightWall = 23.12;
-            public double leftWall = -23.12;
+            // 24.6:   sub .95
+            public double rightWall = 23.65; //.65: 23.95; // too far 23.12;
+            
+            // -24.6: add .95 
+            public double leftWall = -23.65; //.65: -23.95; // too far -23.12;
 
-            public double bottomWall = -12.22;
-            public double topWall = 14.23;
+            // -13.71: add .95
+            public double bottomWall = -12.75; // .65: -13.06; //too far -12.22;
+            
+            // 15.7 sub .95
+            public double topWall = 14.76; //.65: 15.06; //too far 14.23;
         }
 
         // wallBounds[0] -- Top 
@@ -87,6 +93,13 @@ namespace SwarchServer
         protected static string clientsConnectedInfo;
         protected static List<playInfo> compareGamePlay = new List<playInfo>();
         protected static List<int> newClientaddedNum = new List<int>();
+
+        protected static Random randomGen;
+        protected static List<int> generatedX;
+        protected static List<int> generatedY;
+        protected static NextRanY ranYPos = new NextRanY();
+        protected static NextRanX ranXPos = new NextRanX();
+
 
         protected static Stopwatch uniClock = new Stopwatch();
         protected static DateTime dt = new DateTime();
@@ -370,16 +383,306 @@ namespace SwarchServer
                                  clientsEntered[i].posY = gd1.posY;
 
 
+                                 if ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= walls.rightWall || (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= walls.leftWall
+                                    || (clientsEntered[i].posY + (clientsEntered[i].playerSize * .55)) >= walls.topWall || (clientsEntered[i].posY - (clientsEntered[i].playerSize * .55)) <= walls.bottomWall)
+                                 {
+
+                                     switch (clientsEntered[i].clientNumber)
+                                     {
+                                         case 1:
+                                             {
+                                                 clientsEntered[i].posX = -17;
+                                                 clientsEntered[i].posY = 7;
+                                                 break;
+                                             }
+                                         case 2:
+                                             {
+                                                 clientsEntered[i].posX = 20;
+                                                 clientsEntered[i].posY = 7;
+                                                 break;
+                                             }
+
+                                         case 3:
+                                             {
+                                                 clientsEntered[i].posX = 20;
+                                                 clientsEntered[i].posY = -10;
+                                                 break;
+                                             }
+                                         default:
+                                             break;
+                                     }
+
+
+                                     clientsEntered[i].playerSize = 2;
+                                     clientsEntered[i].playerSpeed = 10;
+
+                                     clientsEntered[0].sw.WriteLine("hitwall\\{0}\\{1}\\{2}\\{3}\\{4}",
+                                              clientsEntered[i].clientNumber, clientsEntered[i].playerSize,
+                                              clientsEntered[i].playerSpeed, clientsEntered[i].posX, clientsEntered[i].posY);
+
+                                     clientsEntered[1].sw.WriteLine("hitwall\\{0}\\{1}\\{2}\\{3}\\{4}",
+                                               clientsEntered[i].clientNumber, clientsEntered[i].playerSize,
+                                               clientsEntered[i].playerSpeed, clientsEntered[i].posX, clientsEntered[i].posY);
+
+                                     if (clientsEntered.Count == 3)
+                                     {
+                                         clientsEntered[2].sw.WriteLine("hitwall\\{0}\\{1}\\{2}\\{3}\\{4}",
+                                               clientsEntered[i].clientNumber, clientsEntered[i].playerSize,
+                                               clientsEntered[i].playerSpeed, clientsEntered[i].posX, clientsEntered[i].posY);
+                                     }
+                                 }
+                                 else
+                                 {
+
+                                     //currentClientsMove = string.Concat(currentClientsMove,
+                                      //                      string.Format("\\{0}\\{1}\\{2}", gd1.posX, gd1.posY, clientsEntered[i].clientNumber));
+
+                                     clientsEntered[0].sw.WriteLine("move\\{0}\\{1}\\{2}", clientsEntered[i].posX, clientsEntered[i].posY,
+                                                                      clientsEntered[i].clientNumber);
+                                     
+                                     clientsEntered[1].sw.WriteLine("move\\{0}\\{1}\\{2}", clientsEntered[i].posX, clientsEntered[i].posY,
+                                                                      clientsEntered[i].clientNumber);
+
+                                     if (clientsEntered.Count == 3)
+                                     {
+                                         clientsEntered[2].sw.WriteLine("move\\{0}\\{1}\\{2}", clientsEntered[i].posX, clientsEntered[i].posY,
+                                                                      clientsEntered[i].clientNumber);
+                                     }
+
+                                 }
+
+                        
+                        // CHECK FOR COLLISION WITH OTHER PLAYERS ///////////////////////////////////////////////////////
+
+                                 int hitCheckClient = clientsEntered.FindIndex(x => x.clientNumber == clientsEntered[i].clientNumber); //gd1.clientNum);
+
+                                 List<Client> collideList2 = new List<Client>();
+
+
+                                 collideList2 = clientsEntered.FindAll(x => (x.clientNumber != clientsEntered[hitCheckClient].clientNumber) && (x.playerSize != clientsEntered[hitCheckClient].playerSize)&&
+                                     // compares top left corner
+                                    (((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6))
+                                     && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)))
+                                     // bottom left
+                                     || ((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6))
+                                     && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)))
+                                     // top right
+                                     || ((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6))
+                                     && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)))
+                                     //bottom right
+                                     || ((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6))
+                                     && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)))));
+
+
+
+                                 if (collideList2.Count != 0)
+                                 {
+                                     
+
+                                     Console.WriteLine("\nCOLLIDED W/ SOMEONE-- cn1: {0}, cn2: {1}, |||| posxC1: {2}, y {3} posxC2: {4}, y2: {5} |||| SZ1: {6} , SZ2: {7} ",
+                                         collideList2[0].clientNumber, clientsEntered[hitCheckClient].clientNumber, collideList2[0].posX, collideList2[0].posY
+                                         , clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY, collideList2[0].playerSize, clientsEntered[hitCheckClient].playerSize);
+
+                                     int indexC = clientsEntered.FindIndex(x => x.clientNumber == collideList2[0].clientNumber);
+
+
+                                     if (clientsEntered[indexC].clientNumber != 0)
+                                     {
+
+
+
+                                         double reset1X = 0;
+                                         double reset1Y = 0;
+
+                                         double reset2X = 0;
+                                         double reset2Y = 0;
+
+                                         switch (clientsEntered[indexC].clientNumber)
+                                         {
+                                             case 1:
+                                                 {
+                                                     reset1X = -17;
+                                                     reset1Y = 7;
+                                                     break;
+                                                 }
+                                             case 2:
+                                                 {
+                                                     reset1X = 20;
+                                                     reset1Y = 7;
+
+                                                     break;
+                                                 }
+
+                                             case 3:
+                                                 {
+                                                     reset1X = 20;
+                                                     reset1Y = -10;
+                                                     break;
+                                                 }
+                                             default:
+                                                 break;
+                                         }
+
+                                         switch (clientsEntered[hitCheckClient].clientNumber)//(compareGamePlay[i].clientsNum)
+                                         {
+                                             case 1:
+                                                 {
+                                                     reset2X = -17;
+                                                     reset2Y = 7;
+                                                     break;
+                                                 }
+                                             case 2:
+                                                 {
+                                                     reset2X = 20;
+                                                     reset2Y = 7;
+
+                                                     break;
+                                                 }
+
+                                             case 3:
+                                                 {
+                                                     reset2X = 20;
+                                                     reset2Y = -10;
+                                                     break;
+                                                 }
+                                             default:
+                                                 break;
+                                         }
+
+
+
+
+
+
+
+
+
+                                         if (clientsEntered[indexC].playerSize == clientsEntered[hitCheckClient].playerSize)//compareGamePlay[i].size)
+                                         {
+                                             /*
+                                             //reset both and loose their points
+                                             clientsEntered[indexC].posX = randomGen.Next(-22, 22); //reset1X;
+                                             clientsEntered[indexC].posY = randomGen.Next(-11, 13);  //reset1Y;
+                                             clientsEntered[indexC].playerSpeed = 10;
+                                             clientsEntered[indexC].playerSize = 2;
+
+                                             clientsEntered[hitCheckClient].playerSize = 2; //compareGamePlay[i].size;
+                                             clientsEntered[hitCheckClient].posX = randomGen.Next(-22, 22); //reset2X;
+                                             clientsEntered[hitCheckClient].posY = randomGen.Next(-11, 13);
+                                             clientsEntered[hitCheckClient].playerSpeed = 10;
+                                             */
+
+                                         }
+                                         else if (clientsEntered[indexC].playerSize > clientsEntered[hitCheckClient].playerSize)//compareGamePlay[i].size)
+                                         {
+
+                                             double speedChange = (clientsEntered[indexC].playerSpeed - 2);
+
+                                             if (speedChange < 1)
+                                             {
+                                                 clientsEntered[indexC].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                             }
+                                             else
+                                             {
+                                                 clientsEntered[indexC].playerSpeed = speedChange;
+                                             }
+
+
+                                             clientsEntered[indexC].playerSize += clientsEntered[i].playerSize; //compareGamePlay[i].size;
+
+                                             clientsEntered[hitCheckClient].playerSize = 2;
+                                             clientsEntered[hitCheckClient].playerSpeed = 10;
+                                             clientsEntered[hitCheckClient].posX = reset2X; //randomGen.Next(-22, 22);
+                                             clientsEntered[hitCheckClient].posY = reset2Y; //randomGen.Next(-11, 13);
+
+
+
+                                         }
+                                         else if (clientsEntered[indexC].playerSize < clientsEntered[hitCheckClient].playerSize)//compareGamePlay[i].size)
+                                         {
+
+                                             clientsEntered[hitCheckClient].playerSize += clientsEntered[indexC].playerSize;
+
+                                             double speedChange = (clientsEntered[hitCheckClient].playerSpeed - 2);
+
+                                             if (speedChange < 1)
+                                             {
+                                                 clientsEntered[hitCheckClient].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                             }
+                                             else
+                                             {
+                                                 clientsEntered[hitCheckClient].playerSpeed = speedChange;
+                                             }
+
+
+                                             clientsEntered[indexC].posX = reset1X; //randomGen.Next(-22, 22);
+                                             clientsEntered[indexC].posY = reset1Y; //randomGen.Next(-11, 13);
+                                             clientsEntered[indexC].playerSize = 2;
+                                             clientsEntered[indexC].playerSpeed = 10;
+
+
+                                         }
+
+
+                                         clientsEntered[0].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+                                             clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                             clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
+                                             clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
+
+                                         clientsEntered[1].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+                                             clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                             clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
+                                             clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
+
+                                         if (clientsEntered.Count == 3)
+                                         {
+                                             clientsEntered[2].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+                                                 clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                                 clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
+                                                 clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
+                                         }
+
+                                         Thread.Sleep(200);
+                                         clientsEntered[i].clientQueue.Clear();
+
+                                         /*
+                                         gameData peek = new gameData();
+                                        if(clientsEntered[i].clientQueue.Count!= 0)
+                                          peek = (gameData)clientsEntered[i].clientQueue.Peek();
+                                         if (peek.action == "move")
+                                         {
+                                             clientsEntered[i].clientQueue.Dequeue();
+                                         }
+                                         */
+                                     }
+
+
+
+                                 }
+                                 else
+                                 {
+
+                                     // ***** SEND MISS ***** for debugging purposes
+
+                                    // clientsEntered[0].sw.WriteLine("missHitOpp\\{0}", clientsEntered[i].clientNumber);
+
+                                     //clientsEntered[1].sw.WriteLine("missHitOpp\\{0}", clientsEntered[i].clientNumber);
+
+                                     //if (clientsEntered.Count == 3)
+                                     //{
+                                     //    clientsEntered[2].sw.WriteLine("missHitOpp\\{0}", clientsEntered[i].clientNumber);
+                                     //}
+
+                                 }
+
+
+
+
+
+
                                 
-
-                                currentClientsMove = string.Concat(currentClientsMove,
-                                                            string.Format("\\{0}\\{1}\\{2}", gd1.posX, gd1.posY, clientsEntered[i].clientNumber)); //tempClient.clientNumber));
-
-                                clientsEntered[0].sw.WriteLine("move{0}", currentClientsMove);
-                                clientsEntered[1].sw.WriteLine("move{0}", currentClientsMove);
-
-                                currentClientsMove = "";
-
                                 break;
                             }
                             //  move\\gameobject.x\\gameobject.z\\1
@@ -457,11 +760,20 @@ namespace SwarchServer
 
                                     //tempClient
                                     clientsEntered[i].sw.WriteLine(string.Concat(
-                                        String.Format("clientNumber\\{0}\\{1}\\{2}", clientsEntered[i].clientNumber, initialX, initialY), pellLoc));  // initPelletLocation
+                                        String.Format("clientNumber\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}",
+                                        clientsEntered[i].clientNumber, initialX, initialY,
+                                        (walls.leftWall-.95), (walls.rightWall+.95),(walls.topWall+.95),(walls.bottomWall-.95)), pellLoc));  // initPelletLocation
                                                                                    //tempClient
 
+
+                                    //  updateNewClient = string.Concat(updateNewClient,
+                                    //           string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}", clientsPlayingInfo[r].posX,
+                                    //           clientsPlayingInfo[r].posY, clientsPlayingInfo[r].clientNumber,
+                                    //          clientsPlayingInfo[r].playerSpeed, clientsPlayingInfo[r].playerSize));
+
                                     clientsConnectedInfo = string.Concat(clientsConnectedInfo,
-                                        string.Format("\\{0}\\{1}\\{2}", initialX, initialY, clientsEntered[i].clientNumber));
+                                    string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}", initialX, initialY,
+                                    clientsEntered[i].clientNumber,clientsEntered[i].playerSpeed,clientsEntered[i].playerSize));
                                                                                          //tempClient                    
                                                     
                                     if (addAfterStart)
@@ -485,20 +797,117 @@ namespace SwarchServer
                             }
                         case "hitPell":
                             {
-                               playInfo tempPlayInfo = new playInfo();
+                               //playInfo tempPlayInfo = new playInfo();
 
-                               tempPlayInfo.hitType = "hitPell";
+                               //tempPlayInfo.hitType = "hitPell";
 
-                               tempPlayInfo.objectNum = gd1.clientNum;
-                               tempPlayInfo.size = gd1.size;
-                               tempPlayInfo.compareX = gd1.posX;
-                               tempPlayInfo.compareY = gd1.posY;
-                               tempPlayInfo.timeStamp = gd1.timeStamp;
-                               tempPlayInfo.clientsNum = clientsEntered[i].clientNumber;
+                               //tempPlayInfo.objectNum = gd1.clientNum;
+                               //tempPlayInfo.size = gd1.size;
+                               //tempPlayInfo.compareX = gd1.posX;
+                               //tempPlayInfo.compareY = gd1.posY;
+                               //tempPlayInfo.timeStamp = gd1.timeStamp;
+                               //tempPlayInfo.clientsNum = clientsEntered[i].clientNumber;
                                                        //tempClient
 
-                               compareGamePlay.Add(tempPlayInfo); //.Insert(tempClient.clientNumber, tempPlayInfo);
-                               
+                               //compareGamePlay.Add(tempPlayInfo); //.Insert(tempClient.clientNumber, tempPlayInfo);
+
+                               pellet hitPell = new pellet();
+                                hitPell = gamePellets.Find(x=>x.pellNum == gd1.clientNum);
+
+                               int indexPell  = gamePellets.FindIndex(x=>x.pellNum == hitPell.pellNum);
+
+                               List<Client> tempC1 = new List<Client>();
+                               tempC1 = clientsEntered.FindAll(x =>
+     // compares the pellet corner: top left 
+                                   ((x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px - (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px - (.6))
+                                   && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py + (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py + (.6)))
+                                       // bottom left
+                                   || (x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px - (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px - (.6))
+                                   && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py - (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py - (.6))
+                                       // top right
+                                   || ((x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px + (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px + (.6))
+                                   && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py + (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py + (.6)))
+                                       //bottom right
+                                   || ((x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px + (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px + (.6))
+                                   && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py - (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py - (.6))));
+
+
+
+                               if (tempC1.Count != 0)
+                               {
+                                   // List<playInfo> orderTempList = (List<playInfo>)tempC1.OrderBy(x => x.timeStamp.Millisecond);
+
+                                  int indexC1 = clientsEntered.FindIndex(x => x.clientNumber == tempC1[0].clientNumber);
+
+
+                                   if (clientsEntered[indexC1].clientNumber != 0)
+                                   {
+
+                                       double speedChange = (clientsEntered[indexC1].playerSpeed - 2);
+
+                                       if (speedChange < 1)
+                                       {
+                                           clientsEntered[indexC1].playerSpeed = clientsEntered[indexC1].playerSpeed * .85;
+
+                                       }
+                                       else
+                                       {
+                                           clientsEntered[indexC1].playerSpeed = speedChange;
+                                       }
+
+
+                                       clientsEntered[indexC1].playerSize = clientsEntered[indexC1].playerSize + growSize;
+
+                                       int removePellX = generatedX.FindIndex(x => x == gamePellets[indexPell].px);
+                                       int removePellY = generatedY.FindIndex(y => y == gamePellets[indexPell].py);
+
+                                       generatedX.RemoveAt(removePellX);
+                                       generatedY.RemoveAt(removePellY);
+
+                                       gamePellets[indexPell].px = ranXPos.randomXpos(); //NextRanX();
+                                       gamePellets[indexPell].py = ranYPos.randomYpos(); //NextRanY();
+                                       
+
+
+                                        clientsEntered[0].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                    clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                    clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                    gamePellets[indexPell].py);
+
+                                        clientsEntered[1].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                    clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                    clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                    gamePellets[indexPell].py);
+
+                                     if (clientsEntered.Count == 3)
+                                     {
+                                         clientsEntered[2].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                       clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                       clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                       gamePellets[indexPell].py);
+                                    
+                                     }
+
+
+                                   }
+                               }
+                               else
+                               {
+
+                                   // ***** SEND MISS ***** for debugging purposes
+
+                                   clientsEntered[0].sw.WriteLine("missPell");
+
+                                   clientsEntered[1].sw.WriteLine("missPell");
+
+                                   if (clientsEntered.Count == 3)
+                                   {
+                                       clientsEntered[2].sw.WriteLine("missPell");                               
+                                   }
+
+                               }
+                                
+
                                 break;
                             }
                         case "score":
@@ -514,19 +923,159 @@ namespace SwarchServer
                             }
                         case"hitOpp":
                             {
-                                playInfo tempPlayInfo = new playInfo();
-                                tempPlayInfo.hitType = "hitOpp";
-                                tempPlayInfo.clientsNum2 = gd1.clientNum;
-                                tempPlayInfo.clientsNum =  clientsEntered[i].clientNumber;
-                                tempPlayInfo.size = gd1.size;
-                                tempPlayInfo.compareX = gd1.posX;
-                                tempPlayInfo.compareY = gd1.posY;
+                               
+//====================================================================================================================================
+/*                                
+                                // send from client, check if it got hit
+                                 int hitCheckClient = clientsEntered.FindIndex(x => x.clientNumber == gd1.clientNum);
 
-                                compareGamePlay.Add(tempPlayInfo); 
+                                List<Client> collideList2 = new List<Client>();
 
+
+                                collideList2 = clientsEntered.FindAll(x => (x.clientNumber != clientsEntered[hitCheckClient].clientNumber) &&
+                                    // compares top left corner
+                                   (((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6))
+                                    && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)))
+                                    // bottom left
+                                    || ((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX - (clientsEntered[hitCheckClient].playerSize * .6))
+                                    && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)))
+                                    // top right
+                                    || ((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6))
+                                    && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY + (clientsEntered[hitCheckClient].playerSize * .6)))
+                                    //bottom right
+                                    || ((x.posX + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posX - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posX + (clientsEntered[hitCheckClient].playerSize * .6))
+                                    && (x.posY + (x.playerSize * .6)) >= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)) && (x.posY - (x.playerSize * .6)) <= (clientsEntered[hitCheckClient].posY - (clientsEntered[hitCheckClient].playerSize * .6)))));
+
+
+
+                                if (collideList2.Count != 0)
+                                {
+
+                                    Console.WriteLine("\nCOLLIDED W/ SOMEONE-- cn1: {0}, cn2: {1}, posxC1 {2}, y {3} :: posxC2 {4}, y2 {5} -_- SZ1 {6} , SZ2{7} ",
+                                        collideList2[0].clientNumber, clientsEntered[hitCheckClient].clientNumber, collideList2[0].posX, collideList2[0].posY
+                                        , clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY, collideList2[0].playerSize, clientsEntered[hitCheckClient].playerSize);
+
+                                    int indexC = clientsEntered.FindIndex(x => x.clientNumber == collideList2[0].clientNumber);
+
+
+                                    if (clientsEntered[indexC].clientNumber != 0)
+                                    {
+
+                                        if (clientsEntered[indexC].playerSize == clientsEntered[hitCheckClient].playerSize)//compareGamePlay[i].size)
+                                        {
+
+                                            //reset both and loose their points
+                                            clientsEntered[indexC].posX = randomGen.Next(-23, 23); //reset1X;
+                                            clientsEntered[indexC].posY = randomGen.Next(-12, 14);  //reset1Y;
+                                            clientsEntered[indexC].playerSpeed = 10;
+                                            clientsEntered[indexC].playerSize = 2;
+
+                                            clientsEntered[hitCheckClient].playerSize = 2; //compareGamePlay[i].size;
+                                            clientsEntered[hitCheckClient].posX = randomGen.Next(-23, 23); //reset2X;
+                                            clientsEntered[hitCheckClient].posY = randomGen.Next(-12, 14);
+                                            clientsEntered[hitCheckClient].playerSpeed = 10;
+
+
+                                        }
+                                        else if (clientsEntered[indexC].playerSize > clientsEntered[hitCheckClient].playerSize)//compareGamePlay[i].size)
+                                        {
+
+                                            double speedChange = (clientsEntered[indexC].playerSpeed - 2);
+
+                                            if (speedChange < 1)
+                                            {
+                                                clientsEntered[indexC].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                            }
+                                            else
+                                            {
+                                                clientsEntered[indexC].playerSpeed = speedChange;
+                                            }
+
+
+                                            clientsEntered[indexC].playerSize += clientsEntered[i].playerSize; //compareGamePlay[i].size;
+
+                                            clientsEntered[hitCheckClient].playerSize = 2;
+                                            clientsEntered[hitCheckClient].playerSpeed = 10;
+                                            clientsEntered[hitCheckClient].posX = randomGen.Next(-23, 23);
+                                            clientsEntered[hitCheckClient].posY = randomGen.Next(-12, 14);
+
+
+
+                                        }
+                                        else if (clientsEntered[indexC].playerSize < clientsEntered[hitCheckClient].playerSize)//compareGamePlay[i].size)
+                                        {
+
+                                            clientsEntered[hitCheckClient].playerSize += clientsEntered[indexC].playerSize;
+
+                                            double speedChange = (clientsEntered[hitCheckClient].playerSpeed - 2);
+
+                                            if (speedChange < 1)
+                                            {
+                                                clientsEntered[hitCheckClient].playerSpeed = clientsEntered[indexC].playerSpeed * .85;
+
+                                            }
+                                            else
+                                            {
+                                                clientsEntered[hitCheckClient].playerSpeed = speedChange;
+                                            }
+
+
+                                            clientsEntered[indexC].posX = randomGen.Next(-23, 23);
+                                            clientsEntered[indexC].posY = randomGen.Next(-12, 14);
+                                            clientsEntered[indexC].playerSize = 2;
+                                            clientsEntered[indexC].playerSpeed = 10;
+                                            
+
+                                        }
+
+
+                                            clientsEntered[0].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+                                                clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                                clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
+                                                clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
+
+                                            clientsEntered[1].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+                                                clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                                clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
+                                                clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
+
+                                        if(clientsEntered.Count == 3)
+                                        {
+                                            clientsEntered[2].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+                                                clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+                                                clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
+                                                clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
+                                        }
+
+                                    }
+
+                                   
+
+                                }
+                                else
+                                {
+
+                                    // ***** SEND MISS ***** for debugging purposes
+
+                                    clientsEntered[0].sw.WriteLine("missHitOpp\\{0}", clientsEntered[i].clientNumber);
+
+                                    clientsEntered[1].sw.WriteLine("missHitOpp\\{0}", clientsEntered[i].clientNumber);
+
+                                    if (clientsEntered.Count == 3)
+                                    {
+                                        clientsEntered[2].sw.WriteLine("missHitOpp\\{0}", clientsEntered[i].clientNumber);
+                                    }
+
+                                }
+
+
+
+*/
+//===================================================================================================================================
                                 break;
                             }
-
+                      /*
                         case "wall":
                             {
                                 clientsEntered[i].playerSize = 2;
@@ -561,6 +1110,7 @@ namespace SwarchServer
                                 break;
                             }
 
+                       */
 
                         default:
                             break;
@@ -575,10 +1125,9 @@ namespace SwarchServer
             if (numClientsPass > 1 && numClientsPass > currentNumPlayers) //&& !sentStartGame
             {
 
-
                 if (addAfterStart)
                 {
-                    // TESTING (since still don't have movement sent over):
+                   
                     // currentClientsMove = ""
 
                     for (int l = 0; l < clientsEntered.Count; ++l)
@@ -587,15 +1136,26 @@ namespace SwarchServer
 
                         if ((newClientaddedNum.Find(x => x == clientsEntered[l].clientNumber)) != 0)
                         {
-                            // clients who just joined (could optimize by somehow getting most recent movements before )
-                            //tC
-                            clientsEntered[l].sw.WriteLine("startInitalGame{0}", clientsConnectedInfo);
+                            
+                            List<Client> clientsPlayingInfo = new List<Client>();
+                           clientsPlayingInfo  = clientsEntered.FindAll(i=>i.clientNumber != newClientaddedNum[0]);
+                            
+                            string updateNewClient ="";
+                            for(int r=0; r< clientsPlayingInfo.Count; ++r)
+                            {
+                            
+                               updateNewClient = string.Concat(updateNewClient,
+                                       string.Format("\\{0}\\{1}\\{2}\\{3}\\{4}", clientsPlayingInfo[r].posX,
+                                        clientsPlayingInfo[r].posY, clientsPlayingInfo[r].clientNumber,
+                                        clientsPlayingInfo[r].playerSpeed, clientsPlayingInfo[r].playerSize));
+                            
+                            }
+
+                            clientsEntered[l].sw.WriteLine("startInitalGame{0}",updateNewClient);//clientsConnectedInfo);
                         }
                         else
                         {
-                            //clients who already playing
-                            //           // , numClientsPass
-                            //tC
+                            
                             clientsEntered[l].sw.WriteLine("newEntry{0}", newClientsInfo);
                         }
                     }
@@ -645,7 +1205,7 @@ namespace SwarchServer
                 }
                 addedNewPellets = "";
             }
-        */
+        
 
             if (clientsHit != "")
             {
@@ -669,12 +1229,8 @@ namespace SwarchServer
                 wallHitClients = "";
             }
 
-
-
-
-
-
-            
+         */
+   
         }
     }
 }
@@ -902,7 +1458,7 @@ private class BroadCast
                         else if (data[0] == "hitPell")
                         {
                             gamedata.action = data[0];
-                            gamedata.clientNum = Convert.ToInt32(data[1]); // pell or other client
+                            gamedata.clientNum = Convert.ToInt32(data[1]); // pell 
                             gamedata.size = Convert.ToInt32(data[2]);
                             gamedata.posX = Convert.ToDouble(data[3]);
                             gamedata.posY = Convert.ToDouble(data[4]);
@@ -923,12 +1479,12 @@ private class BroadCast
                             
                         }
 
-                        if (gamedata.action == "hitOpp")
-                        {
-                            Console.WriteLine("hitOPP :: client who sent {0}, opp {1}" ,
-                                clientsEntered[cliIndex].clientNumber, gamedata.clientNum);
+                       // if (gamedata.action == "hitOpp")
+                       // {
+                        //    Console.WriteLine("hitOPP :: client who sent {0}, opp {1}" ,
+                        //        clientsEntered[cliIndex].clientNumber, gamedata.clientNum);
                         
-                        }
+                       // }
 
                           if(gamedata.action != "")
                           {
@@ -976,9 +1532,9 @@ private class ClientGameState
 
     List<playInfo> resolvedPellets;
 
-    public Random randomGen;
-    List<int> generatedX;
-    List<int> generatedY;
+    //public Random randomGen;
+    //List<int> generatedX;
+    //List<int> generatedY;
 
     //TEMP
     bool round2;
@@ -1042,8 +1598,8 @@ private class ClientGameState
 
     public void gameState()  //NOTHING IS SENT OUT HERE, JUST CALCULATED
     {
-        while (true)
-        {
+        //while (true)
+        //{
 
             if (!startedGame) //(client1Start && client2Start)
             {
@@ -1051,8 +1607,8 @@ private class ClientGameState
                 for (int i = 0; i < numberOfpellets; ++i)
                 {
                     pellet p = new pellet();
-                    p.px = NextRanX();//randPellets.Next(-23,23);
-                    p.py = NextRanY();//randPellets.Next(-12, 14);
+                    p.px = ranXPos.randomXpos(); //NextRanX();//randPellets.Next(-23,23);
+                    p.py = ranYPos.randomYpos(); //NextRanY();//randPellets.Next(-12, 14);
                     p.pellNum = i + 1;
 
                     gamePellets.Add(p);
@@ -1070,6 +1626,10 @@ private class ClientGameState
             //     startedTimer = true;
             // }
 
+
+
+// ___________________________________________________________________________________________________________________________
+/*
             if (numClientsPass > 1) // physTimer.Elapsed.Milliseconds >= 20 && 
             {
                 List<Client> tempC = new List<Client>();
@@ -1131,7 +1691,7 @@ private class ClientGameState
 
                     //List<playInfo> tempList = compareGamePlay.FindAll((x => x.objectNum == i+1) );
 
-                    // /* 
+                    // / * 
                     // ?? wait to see if another "hit" is on it's way.
                     for (int i = 0; i < gamePellets.Count; ++i)
                     {
@@ -1152,12 +1712,7 @@ private class ClientGameState
                             || ((x.posX + (x.playerSize / 2)) >= (gamePellets[i].px + (.5)) && (x.posX - (x.playerSize / 2)) <= (gamePellets[i].px + (.5))
                             && (x.posY + (x.playerSize / 2)) >= (gamePellets[i].py - (.5)) && (x.posY - (x.playerSize / 2)) <= (gamePellets[i].py - (.5))));
    
-                        /*
-                            (x.posX + (x.playerSize / 2) >= gamePellets[i].px - (.5) && x.posX + (x.playerSize / 2) <= gamePellets[i].px + (.5))
-                            || (x.posX - (x.playerSize / 2) <= gamePellets[i].px + (.5) && x.posX - (x.playerSize / 2) >= gamePellets[i].px - (.5))
-                            || (x.posY + (x.playerSize / 2) >= gamePellets[i].py - (.5) && x.posY + (x.playerSize / 2) <= gamePellets[i].py + (.5))
-                            || (x.posY - (x.playerSize / 2) <= gamePellets[i].py + (.5) && x.posY - (x.playerSize / 2) >= gamePellets[i].py - (.5)));
-                        */
+                        
                         if (tempC1.Count != 0)
                         {
                             // List<playInfo> orderTempList = (List<playInfo>)tempC1.OrderBy(x => x.timeStamp.Millisecond);
@@ -1224,13 +1779,15 @@ private class ClientGameState
 
                                     //}
 
-                                    clientsEntered[0].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
-                                clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
-                                gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py);
+//  METHOD:  send through w/o input from client 
 
-                                    clientsEntered[1].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
-                                clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
-                                gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py);
+//                                    clientsEntered[0].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+//                                clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
+//                                gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py);
+
+//                                    clientsEntered[1].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+//                                clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize), clientsEntered[indexC1].playerSpeed,
+//                                gamePellets[i].pellNum, gamePellets[i].px, gamePellets[i].py);
 
                                 //add a thrid client if there is one
                                            
@@ -1276,22 +1833,7 @@ private class ClientGameState
                                 && (x.posY + (x.playerSize / 2)) >= (clientsEntered[i].posY - (clientsEntered[i].playerSize / 2)) && (x.posY - (x.playerSize / 2)) <= (clientsEntered[i].posY - (clientsEntered[i].playerSize / 2)))));
 
 
-                            /*
-                             tempC1 = clientsEntered.FindAll(x =>
-                                // compares top left corner
-                                    ((x.posX + (x.playerSize / 2)) >= (gamePellets[i].px - (.5)) && (x.posX - (x.playerSize / 2)) <= (gamePellets[i].px - (.5))
-                                    && (x.posY + (x.playerSize / 2)) >= (gamePellets[i].py + (.5)) && (x.posY - (x.playerSize / 2)) <= (gamePellets[i].py + (.5)))
-                                    // bottom left
-                                    || (x.posX + (x.playerSize / 2)) >= (gamePellets[i].px - (.5)) && (x.posX - (x.playerSize / 2)) <= (gamePellets[i].px - (.5))
-                                    && (x.posY + (x.playerSize / 2)) >= (gamePellets[i].py - (.5)) && (x.posY - (x.playerSize / 2)) <= (gamePellets[i].py - (.5))
-                                    // top right
-                                    || ((x.posX + (x.playerSize / 2)) >= (gamePellets[i].px + (.5)) && (x.posX - (x.playerSize / 2)) <= (gamePellets[i].px + (.5))
-                                    && (x.posY + (x.playerSize / 2)) >= (gamePellets[i].py + (.5)) && (x.posY - (x.playerSize / 2)) <= (gamePellets[i].py + (.5)))
-                                    //bottom right
-                                    || ((x.posX + (x.playerSize / 2)) >= (gamePellets[i].px + (.5)) && (x.posX - (x.playerSize / 2)) <= (gamePellets[i].px + (.5))
-                                    && (x.posY + (x.playerSize / 2)) >= (gamePellets[i].py - (.5)) && (x.posY - (x.playerSize / 2)) <= (gamePellets[i].py - (.5))));
-    
-                              */
+                            
 
 
 
@@ -1304,15 +1846,7 @@ private class ClientGameState
 
                             if (collideList2.Count != 0)
                             {
-                                /*
-                                Console.WriteLine("resolvePel count: {0} ", resolvedPellets.Count);
-                                for (int w = 0; w < resolvedPellets.Count; ++w)
-                                {
-
-                                    Console.WriteLine("\nResolved pellets == clin#1 {0}, clin#2 {1}, Obj# {2} ",
-                                        resolvedPellets[i].clientsNum, resolvedPellets[i].clientsNum2, resolvedPellets[i].objectNum);
-                                }
-                                */
+                                
                                 Console.WriteLine("\nCOLLIDED W/ SOMEONE-- cn1 {0}, cn2 {1}, posxC1 {2}, y {3} :: posxC2 {4}, y2 {5} -_- SZ1 {6} , SZ2{7} ",
                                     collideList2[0].clientNumber, clientsEntered[i].clientNumber, collideList2[0].posX, collideList2[0].posY
                                     , clientsEntered[i].posX, clientsEntered[i].posY, collideList2[0].playerSize, clientsEntered[i].playerSize);
@@ -1330,65 +1864,7 @@ private class ClientGameState
                                     //&& !resolvedPellets.Exists(x => (x.objectNum == compareGamePlay[i].objectNum)
                                     //                            && (x.compareX == compareGamePlay[i].compareX) && (x.compareY == compareGamePlay[i].compareY)))
                                     //{
-                                /*
-                                    double reset1X = 0;
-                                    double reset1Y = 0;
-
-                                    double reset2X = 0;
-                                    double reset2Y = 0;
-
-                                    switch (clientsEntered[indexC].clientNumber)
-                                    {
-                                        case 1:
-                                            {
-                                                reset1X = -17;
-                                                reset1Y = 7;
-                                                break;
-                                            }
-                                        case 2:
-                                            {
-                                                reset1X = 20;
-                                                reset1Y = 7;
-
-                                                break;
-                                            }
-
-                                        case 3:
-                                            {
-                                                reset1X = 20;
-                                                reset1Y = -10;
-                                                break;
-                                            }
-                                        default:
-                                            break;
-                                    }
-
-                                    switch (clientsEntered[i].clientNumber)//(compareGamePlay[i].clientsNum)
-                                    {
-                                        case 1:
-                                            {
-                                                reset2X = -17;
-                                                reset2Y = 7;
-                                                break;
-                                            }
-                                        case 2:
-                                            {
-                                                reset2X = 20;
-                                                reset2Y = 7;
-
-                                                break;
-                                            }
-
-                                        case 3:
-                                            {
-                                                reset2X = 20;
-                                                reset2Y = -10;
-                                                break;
-                                            }
-                                        default:
-                                            break;
-                                    }
-                                 */
+                                
 
                                     if (clientsEntered[indexC].playerSize == clientsEntered[i].playerSize)//compareGamePlay[i].size)
                                     {
@@ -1482,15 +1958,15 @@ private class ClientGameState
                                     }
 
 
-                                    clientsEntered[0].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
-                                       clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
-                                      clientsEntered[indexC].posY, clientsEntered[i].clientNumber, clientsEntered[i].playerSize, clientsEntered[i].playerSpeed,
-                                       clientsEntered[i].posX, clientsEntered[i].posY);
+//                                    clientsEntered[0].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+//                                       clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+//                                      clientsEntered[indexC].posY, clientsEntered[i].clientNumber, clientsEntered[i].playerSize, clientsEntered[i].playerSpeed,
+//                                       clientsEntered[i].posX, clientsEntered[i].posY);
 
-                                    clientsEntered[1].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
-                                            clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
-                                           clientsEntered[indexC].posY, clientsEntered[i].clientNumber, clientsEntered[i].playerSize, clientsEntered[i].playerSpeed,
-                                            clientsEntered[i].posX, clientsEntered[i].posY);
+//                                    clientsEntered[1].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+//                                            clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
+//                                           clientsEntered[indexC].posY, clientsEntered[i].clientNumber, clientsEntered[i].playerSize, clientsEntered[i].playerSpeed,
+//                                           clientsEntered[i].posX, clientsEntered[i].posY);
 
                                 }
 
@@ -1505,29 +1981,37 @@ private class ClientGameState
                 resolvedPellets.Clear();
 
             }
+*/ 
 
 
-
-        }
+       // } //MAIN WHILE LOOP
 
 
     }
+ 
 
-    public int NextRanX()
+}
+
+public class NextRanX
+{
+    public int randomXpos()
     {
-        int r;
-        do
-        {
-            r = randomGen.Next(-23, 23);
-        }
-        while (generatedX.Contains(r));
+      int r;
+      do
+      {
+        r = randomGen.Next(-23, 23);
+      }
+      while (generatedX.Contains(r));
 
-        generatedX.Add(r);
-        return r;
+      generatedX.Add(r);
+      return r;
     }
+}
 
-    public int NextRanY()
-    {
+ public class NextRanY
+ {
+     public int randomYpos()
+     {
         int r;
         do
         {
@@ -1537,10 +2021,8 @@ private class ClientGameState
 
         generatedY.Add(r);
         return r;
-    }
-
-} 
-
+     }
+}
 private class handleCollisions
 {
 
