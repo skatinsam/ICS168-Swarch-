@@ -13,7 +13,7 @@ using  System.Collections.Generic;
 public class Sockets : MonoBehaviour {
 
 
-	const string SERVER_LOCATION = "169.234.3.16";  //<-- **** CHANGE for every connection to internet 
+	const string SERVER_LOCATION = "169.234.38.21";  //<-- **** CHANGE for every connection to internet 
 	
 	const int SERVER_PORT = 4040; //YOUR PORT NUMBER; //FILL THESE OUT FOR YOUR OWN SERVER
 	

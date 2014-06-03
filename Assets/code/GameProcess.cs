@@ -105,11 +105,11 @@ public class GameProcess : MonoBehaviour
 	{
 		if ( GUI.Button( new Rect( 0, 50, 100, 20), "Disconnect"))
 		{
-			returnSocket().sendQueue.Enqueue("quit");
+			//returnSocket().sendQueue.Enqueue("quit");
 
-			//socks.endThread();
-			//socks.Disconnect();
-			//print("\nDISCONNECTED ");
+			socks.endThread();
+			socks.Disconnect();
+			print("\nDISCONNECTED ");
 		}
 
 	}
@@ -414,6 +414,7 @@ public class GameProcess : MonoBehaviour
 			  }
 
 			}
+		 /*
 			else if(splitData[0] == "closed")
 			{
 
@@ -428,7 +429,7 @@ public class GameProcess : MonoBehaviour
 			    // clear the score here
 			  }
 			}
-
+		  */
 
 		}
 	 }
