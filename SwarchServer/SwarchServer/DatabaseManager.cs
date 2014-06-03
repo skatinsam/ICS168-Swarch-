@@ -176,7 +176,7 @@ namespace SwarchServer
         //Return new score
         public int updateScore(String user, int score)
         {
-            String query = String.Format("SELECT user, totalscore, localhighscore FROM scores WHERE user='{0}'", user);
+            String query = String.Format("SELECT name, totalscore, localhighscore FROM scores WHERE name='{0}'", user);
             DataTable result = runQuery(query);
             String s = result.Rows[0]["totalscore"].ToString();
             String l = result.Rows[0]["localhighscore"].ToString();
