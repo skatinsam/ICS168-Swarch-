@@ -105,9 +105,11 @@ public class GameProcess : MonoBehaviour
 	{
 		if ( GUI.Button( new Rect( 0, 50, 100, 20), "Disconnect"))
 		{
-			socks.endThread();
-			socks.Disconnect();
-			print("\nDISCONNECTED ");
+			returnSocket().sendQueue.Enqueue("quit");
+
+			//socks.endThread();
+			//socks.Disconnect();
+			//print("\nDISCONNECTED ");
 		}
 
 	}
@@ -359,12 +361,7 @@ public class GameProcess : MonoBehaviour
 			}
 			else if(splitData[0] == "pH")
 			{
-			   /*
-clientsEntered[indexC].clientNumber, 2, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
-clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEntered[tempi].playerSpeed, reset2X, reset2Y));
-					
-			    */
-				
+			   				
 			  for(int r =1; r< splitData.Length; r = r+5)
 			  {
             
@@ -407,63 +404,30 @@ clientsEntered[indexC].posY, clientsEntered[tempi].clientNumber, 2, clientsEnter
 					
 					tempClient.MoveSpeed = float.Parse( splitData[r+2]);
 					
-					//tempClient.transform.position = new Vector3(float.Parse(splitData[r+8]),
-					//                                            tempClient.transform.position.y,
-					//                                            float.Parse(splitData[r+9]));
-						
 							tempClient.pos = new Vector3(float.Parse(splitData[r+3]),
 							                             tempClient.transform.position.y,
 							                              float.Parse(splitData[r+4]));
 
 						
 				}
-/*
-				else
-				{
-					opponent tempClient = GameObject.Find("opponent"+splitData[r]).GetComponent<opponent>();
-					
-					
-					
-					tempClient.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+1]),
-					                                              tempClient.transform.localScale.y,
-					                                              Convert.ToInt32(splitData[r+1]));
-					
-					tempClient.MoveSpeed = float.Parse( splitData[r+2]);
-					
-					//tempClient.transform.position = new Vector3(float.Parse(splitData[r+3]),
-					//                                            tempClient.transform.position.y,
-					//                                            float.Parse(splitData[r+4]));
 
-
-					tempClient.pos = new Vector3(float.Parse(splitData[r+3]),
-					                                            tempClient.transform.position.y,
-					                                            float.Parse(splitData[r+4]));
-
-
-							//  UPDATE THE PLAYER //
-
-					player.transform.localScale = new Vector3(Convert.ToInt32(splitData[r+6]),
-					                                          player.transform.localScale.y,
-					                                          Convert.ToInt32(splitData[r+6]));
-					
-					player.MoveSpeed = float.Parse( splitData[r+7]);
-					
-					
-					//player.transform.position = new Vector3(float.Parse(splitData[r+8]),
-					//                                        player.transform.position.y,
-					//                                        float.Parse(splitData[r+9]));
-
-					player.pos = new Vector3(float.Parse(splitData[r+8]),
-					                                        player.transform.position.y,
-					                                        float.Parse(splitData[r+9]));
-
-
-				}
-*/
 			  }
 
 			}
+			else if(splitData[0] == "closed")
+			{
 
+			  if(Convert.ToInt32(splitData[1]) == player.playerNum)
+			  {
+			     socks.endThread();
+				 socks.Disconnect();
+				 Application.Quit();
+			  }
+			  else
+			  {
+			    // clear the score here
+			  }
+			}
 
 
 		}

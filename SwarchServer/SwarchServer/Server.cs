@@ -377,11 +377,20 @@ namespace SwarchServer
                     {
                         case "move":
                             {
-                                 //*** MAKE SURE MOVEMENTS ARE SENT NO BIGGER THEN SIZE OF PELLET
+                                 
+                                
+
+                              if ((clientsEntered[i].posX + 0.4) <= (gd1.posX) || (clientsEntered[i].posX - 0.4) >= (gd1.posX)
+                                  || (clientsEntered[i].posY + 0.4) <= (gd1.posY) || (clientsEntered[i].posY - 0.4) >= (gd1.posY))
+                              {
 
                                  clientsEntered[i].posX = gd1.posX;
                                  clientsEntered[i].posY = gd1.posY;
-
+                              }
+                              else
+                              {
+                                  Console.WriteLine("\nCHEATING: TRYING TO JUMP TOO FAR");
+                              }
 
                                  if ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= walls.rightWall || (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= walls.leftWall
                                     || (clientsEntered[i].posY + (clientsEntered[i].playerSize * .55)) >= walls.topWall || (clientsEntered[i].posY - (clientsEntered[i].playerSize * .55)) <= walls.bottomWall)
@@ -451,8 +460,113 @@ namespace SwarchServer
 
                                  }
 
-                        
-                        // CHECK FOR COLLISION WITH OTHER PLAYERS ///////////////////////////////////////////////////////
+  // CHECK COLLISION WITH PELLETS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////              
+                                
+
+
+
+
+
+
+
+
+
+
+
+                                    //WORKING ON MOVEMENT CHECKS FOR PELLET COLLISION
+
+
+
+
+
+
+
+
+
+                                pellet hitPell = new pellet();
+                                 hitPell = gamePellets.Find(x => x.pellNum == gd1.clientNum);
+
+                                 int indexPell = gamePellets.FindIndex(x => x.pellNum == hitPell.pellNum);
+
+                                 List<Client> tempC1 = new List<Client>();
+                                 tempC1 = clientsEntered.FindAll(x =>
+                                     // compares the pellet corner: top left 
+                                     ((x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px - (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px - (.6))
+                                     && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py + (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py + (.6)))
+                                         // bottom left
+                                     || (x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px - (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px - (.6))
+                                     && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py - (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py - (.6))
+                                         // top right
+                                     || ((x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px + (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px + (.6))
+                                     && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py + (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py + (.6)))
+                                         //bottom right
+                                     || ((x.posX + (x.playerSize * .55)) >= (gamePellets[indexPell].px + (.6)) && (x.posX - (x.playerSize * .55)) <= (gamePellets[indexPell].px + (.6))
+                                     && (x.posY + (x.playerSize * .55)) >= (gamePellets[indexPell].py - (.6)) && (x.posY - (x.playerSize * .55)) <= (gamePellets[indexPell].py - (.6))));
+
+
+
+                                 if (tempC1.Count != 0)
+                                 {
+                                     // List<playInfo> orderTempList = (List<playInfo>)tempC1.OrderBy(x => x.timeStamp.Millisecond);
+
+                                     int indexC1 = clientsEntered.FindIndex(x => x.clientNumber == tempC1[0].clientNumber);
+
+
+                                     if (clientsEntered[indexC1].clientNumber != 0)
+                                     {
+
+                                         double speedChange = (clientsEntered[indexC1].playerSpeed - 2);
+
+                                         if (speedChange < 1)
+                                         {
+                                             clientsEntered[indexC1].playerSpeed = clientsEntered[indexC1].playerSpeed * .85;
+
+                                         }
+                                         else
+                                         {
+                                             clientsEntered[indexC1].playerSpeed = speedChange;
+                                         }
+
+
+                                         clientsEntered[indexC1].playerSize = clientsEntered[indexC1].playerSize + growSize;
+
+                                         int removePellX = generatedX.FindIndex(x => x == gamePellets[indexPell].px);
+                                         int removePellY = generatedY.FindIndex(y => y == gamePellets[indexPell].py);
+
+                                         generatedX.RemoveAt(removePellX);
+                                         generatedY.RemoveAt(removePellY);
+
+                                         gamePellets[indexPell].px = ranXPos.randomXpos(); //NextRanX();
+                                         gamePellets[indexPell].py = ranYPos.randomYpos(); //NextRanY();
+
+
+
+                                         clientsEntered[0].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                     clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                     clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                     gamePellets[indexPell].py);
+
+                                         clientsEntered[1].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                     clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                     clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                     gamePellets[indexPell].py);
+
+                                         if (clientsEntered.Count == 3)
+                                         {
+                                             clientsEntered[2].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                           clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                           clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                           gamePellets[indexPell].py);
+
+                                         }
+
+
+                                     }
+                                 }
+         
+
+
+  // CHECK FOR COLLISION WITH OTHER PLAYERS ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                                  int hitCheckClient = clientsEntered.FindIndex(x => x.clientNumber == clientsEntered[i].clientNumber); //gd1.clientNum);
 
@@ -795,6 +909,16 @@ namespace SwarchServer
                                 
                                 break;
                             }
+                        case "quit":
+                            {
+                                for (int b = 0; b < clientsEntered.Count; ++b)
+                                {
+                                    clientsEntered[b].sw.WriteLine("closed\\{0}",clientsEntered[i].clientNumber);
+                                }
+                                clientsEntered[i].TCPclient.Close();
+                                break;
+                            }
+
                         case "hitPell":
                             {
                                //playInfo tempPlayInfo = new playInfo();
@@ -810,7 +934,7 @@ namespace SwarchServer
                                                        //tempClient
 
                                //compareGamePlay.Add(tempPlayInfo); //.Insert(tempClient.clientNumber, tempPlayInfo);
-
+/*
                                pellet hitPell = new pellet();
                                 hitPell = gamePellets.Find(x=>x.pellNum == gd1.clientNum);
 
@@ -907,11 +1031,12 @@ namespace SwarchServer
 
                                }
                                 
-
+*/
                                 break;
                             }
                         case "score":
                             {
+                               /*
                                 int newScore = db.updateScore(gd1.userName, gd1.score);
                                 gd1.score = newScore;
                                 scoreUpdateInfo = string.Concat(scoreUpdateInfo,
@@ -919,6 +1044,7 @@ namespace SwarchServer
 
                                 clientsEntered[i].sw.WriteLine("score{0}", scoreUpdateInfo);
                                 scoreUpdateInfo = "";
+                               */
                                 break;
                             }
                         case"hitOpp":
@@ -1447,6 +1573,13 @@ private class BroadCast
                             gamedata.action = data[0];
                             gamedata.score = Convert.ToInt32(data[1]); //Score
                         }
+                        else if(data[0] == "quit")
+                        {
+                            gamedata.action = data[0];
+
+                        }
+
+                    /*
                         else if (data[0] == "wall")
                         {
                             gamedata.action = data[0];
@@ -1473,6 +1606,7 @@ private class BroadCast
                             gamedata.posY = Convert.ToDouble(data[4]);
 
                         }
+                    */
                         else
                         {
                             gamedata.action = "";
