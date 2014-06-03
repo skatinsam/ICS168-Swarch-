@@ -377,11 +377,20 @@ namespace SwarchServer
                     {
                         case "move":
                             {
-                                 //*** MAKE SURE MOVEMENTS ARE SENT NO BIGGER THEN SIZE OF PELLET
+                                 
+                                
+
+                              if ((clientsEntered[i].posX + 0.4) <= (gd1.posX) || (clientsEntered[i].posX - 0.4) >= (gd1.posX)
+                                  || (clientsEntered[i].posY + 0.4) <= (gd1.posY) || (clientsEntered[i].posY - 0.4) >= (gd1.posY))
+                              {
 
                                  clientsEntered[i].posX = gd1.posX;
                                  clientsEntered[i].posY = gd1.posY;
-
+                              }
+                              else
+                              {
+                                  Console.WriteLine("\nCHEATING: TRYING TO JUMP TOO FAR");
+                              }
 
                                  if ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= walls.rightWall || (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= walls.leftWall
                                     || (clientsEntered[i].posY + (clientsEntered[i].playerSize * .55)) >= walls.topWall || (clientsEntered[i].posY - (clientsEntered[i].playerSize * .55)) <= walls.bottomWall)
@@ -416,10 +425,14 @@ namespace SwarchServer
                                      clientsEntered[i].playerSize = 2;
                                      clientsEntered[i].playerSpeed = 10;
 
-                                     clientsEntered[0].sw.WriteLine("hitwall\\{0}\\{1}\\{2}\\{3}\\{4}",
-                                              clientsEntered[i].clientNumber, clientsEntered[i].playerSize,
-                                              clientsEntered[i].playerSpeed, clientsEntered[i].posX, clientsEntered[i].posY);
+                                     for (int b = 0; b < clientsEntered.Count; ++b)
+                                     {
+                                         clientsEntered[b].sw.WriteLine("hitwall\\{0}\\{1}\\{2}\\{3}\\{4}",
+                                                  clientsEntered[i].clientNumber, clientsEntered[i].playerSize,
+                                                  clientsEntered[i].playerSpeed, clientsEntered[i].posX, clientsEntered[i].posY);
+                                     }
 
+                                    /*
                                      clientsEntered[1].sw.WriteLine("hitwall\\{0}\\{1}\\{2}\\{3}\\{4}",
                                                clientsEntered[i].clientNumber, clientsEntered[i].playerSize,
                                                clientsEntered[i].playerSpeed, clientsEntered[i].posX, clientsEntered[i].posY);
@@ -430,6 +443,7 @@ namespace SwarchServer
                                                clientsEntered[i].clientNumber, clientsEntered[i].playerSize,
                                                clientsEntered[i].playerSpeed, clientsEntered[i].posX, clientsEntered[i].posY);
                                      }
+                                   */
                                  }
                                  else
                                  {
@@ -437,9 +451,14 @@ namespace SwarchServer
                                      //currentClientsMove = string.Concat(currentClientsMove,
                                       //                      string.Format("\\{0}\\{1}\\{2}", gd1.posX, gd1.posY, clientsEntered[i].clientNumber));
 
-                                     clientsEntered[0].sw.WriteLine("move\\{0}\\{1}\\{2}", clientsEntered[i].posX, clientsEntered[i].posY,
-                                                                      clientsEntered[i].clientNumber);
-                                     
+
+                                     for (int b = 0; b < clientsEntered.Count; ++b)
+                                     {
+                                         clientsEntered[b].sw.WriteLine("move\\{0}\\{1}\\{2}", clientsEntered[i].posX, clientsEntered[i].posY,
+                                                                          clientsEntered[i].clientNumber);
+                                     }
+
+                                    /*
                                      clientsEntered[1].sw.WriteLine("move\\{0}\\{1}\\{2}", clientsEntered[i].posX, clientsEntered[i].posY,
                                                                       clientsEntered[i].clientNumber);
 
@@ -448,11 +467,101 @@ namespace SwarchServer
                                          clientsEntered[2].sw.WriteLine("move\\{0}\\{1}\\{2}", clientsEntered[i].posX, clientsEntered[i].posY,
                                                                       clientsEntered[i].clientNumber);
                                      }
+                                   */
 
                                  }
 
-                        
-                        // CHECK FOR COLLISION WITH OTHER PLAYERS ///////////////////////////////////////////////////////
+  // CHECK COLLISION WITH PELLETS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////              
+                                
+
+                                    //WORKING ON MOVEMENT CHECKS FOR PELLET COLLISION
+
+
+
+                               // pellet hitPell = new pellet();
+                               //  hitPell = gamePellets.Find(x => x.pellNum == gd1.clientNum);
+
+                                // int indexPell = gamePellets.FindIndex(x => x.pellNum == hitPell.pellNum);
+
+                                 List<pellet> tempC1 = new List<pellet>();
+                                 tempC1 = gamePellets.FindAll(x =>
+                                     // compares the pellet corner: top left 
+                                     ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= (x.px - (.6)) && (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= (x.px - (.6))
+                                     && (clientsEntered[i].posY + (clientsEntered[i].playerSize * .55)) >= (x.py + (.6)) && (clientsEntered[i].posY - (clientsEntered[i].playerSize * .55)) <= (x.py + (.6)))
+                                         // bottom left
+                                     || (clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= (x.px - (.6)) && (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= (x.px - (.6))
+                                     && (clientsEntered[i].posY + (clientsEntered[i].playerSize * .55)) >= (x.py - (.6)) && (clientsEntered[i].posY - (clientsEntered[i].playerSize * .55)) <= (x.py - (.6))
+                                         // top right
+                                     || ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= (x.px + (.6)) && (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= (x.px + (.6))
+                                     && (clientsEntered[i].posY + (clientsEntered[i].playerSize * .55)) >= (x.py + (.6)) && (clientsEntered[i].posY - (clientsEntered[i].playerSize * .55)) <= (x.py + (.6)))
+                                         //bottom right
+                                     || ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= (x.px + (.6)) && (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= (x.px + (.6))
+                                     && (clientsEntered[i].posY + (clientsEntered[i].playerSize * .55)) >= (x.py - (.6)) && (clientsEntered[i].posY - (clientsEntered[i].playerSize * .55)) <= (x.py - (.6))));
+
+
+
+                                 if (tempC1.Count != 0)
+                                 {
+                                     // List<playInfo> orderTempList = (List<playInfo>)tempC1.OrderBy(x => x.timeStamp.Millisecond);
+
+                                     int indexP = gamePellets.FindIndex(x => x.pellNum == tempC1[0].pellNum);
+
+
+                                         double speedChange = (clientsEntered[i].playerSpeed - 2);
+
+                                         if (speedChange < 1)
+                                         {
+                                             clientsEntered[i].playerSpeed = clientsEntered[i].playerSpeed * .85;
+
+                                         }
+                                         else
+                                         {
+                                             clientsEntered[i].playerSpeed = speedChange;
+                                         }
+
+
+                                         clientsEntered[i].playerSize = clientsEntered[i].playerSize + growSize;
+
+                                         int removePellX = generatedX.FindIndex(x => x == gamePellets[indexP].px);
+                                         int removePellY = generatedY.FindIndex(y => y == gamePellets[indexP].py);
+
+                                         generatedX.RemoveAt(removePellX);
+                                         generatedY.RemoveAt(removePellY);
+
+                                         gamePellets[indexP].px = ranXPos.randomXpos(); //NextRanX();
+                                         gamePellets[indexP].py = ranYPos.randomYpos(); //NextRanY();
+
+
+                                         for (int b = 0; b < clientsEntered.Count; ++b )
+                                         {
+
+                                             clientsEntered[b].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                             clientsEntered[i].clientNumber, (clientsEntered[i].playerSize),
+                                             clientsEntered[i].playerSpeed, gamePellets[indexP].pellNum, gamePellets[indexP].px,
+                                             gamePellets[indexP].py);
+
+                                         }
+                                     //    clientsEntered[1].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                     //clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                     //clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                    // gamePellets[indexPell].py);
+
+                                        // if (clientsEntered.Count == 3)
+                                        // {
+                                        //     clientsEntered[2].sw.WriteLine("newPell\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}",
+                                        //   clientsEntered[indexC1].clientNumber, (clientsEntered[indexC1].playerSize),
+                                        //   clientsEntered[indexC1].playerSpeed, gamePellets[indexPell].pellNum, gamePellets[indexPell].px,
+                                        //   gamePellets[indexPell].py);
+
+                                        // }
+
+
+                                    
+                                 }
+         
+
+
+  // CHECK FOR COLLISION WITH OTHER PLAYERS ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                                  int hitCheckClient = clientsEntered.FindIndex(x => x.clientNumber == clientsEntered[i].clientNumber); //gd1.clientNum);
 
@@ -626,11 +735,16 @@ namespace SwarchServer
                                          }
 
 
-                                         clientsEntered[0].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
+                                            for (int b = 0; b < clientsEntered.Count; ++b )
+                                            {
+
+                                              clientsEntered[b].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
                                              clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
                                              clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
                                              clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
-
+                                        
+                                            }
+                                         /*
                                          clientsEntered[1].sw.WriteLine("pH\\{0}\\{1}\\{2}\\{3}\\{4}\\{5}\\{6}\\{7}\\{8}\\{9}",
                                              clientsEntered[indexC].clientNumber, clientsEntered[indexC].playerSize, clientsEntered[indexC].playerSpeed, clientsEntered[indexC].posX,
                                              clientsEntered[indexC].posY, clientsEntered[hitCheckClient].clientNumber, clientsEntered[hitCheckClient].playerSize, clientsEntered[hitCheckClient].playerSpeed,
@@ -644,6 +758,7 @@ namespace SwarchServer
                                                  clientsEntered[hitCheckClient].posX, clientsEntered[hitCheckClient].posY);
                                          }
 
+                                        */
                                          Thread.Sleep(200);
                                          clientsEntered[i].clientQueue.Clear();
 
@@ -795,6 +910,20 @@ namespace SwarchServer
                                 
                                 break;
                             }
+                       /*
+                        case "quit":
+                            {
+                                for (int b = 0; b < clientsEntered.Count; ++b)
+                                {
+                                    if(clientsEntered[b].clientNumber != 0)
+                                    clientsEntered[b].sw.WriteLine("closed\\{0}",clientsEntered[i].clientNumber);
+                                }
+                                
+                                clientsEntered[i].TCPclient.Close();
+                                clientsEntered[i] = new Client();
+                                break;
+                            }
+                        */
                         case "hitPell":
                             {
                                //playInfo tempPlayInfo = new playInfo();
@@ -810,7 +939,7 @@ namespace SwarchServer
                                                        //tempClient
 
                                //compareGamePlay.Add(tempPlayInfo); //.Insert(tempClient.clientNumber, tempPlayInfo);
-
+/*
                                pellet hitPell = new pellet();
                                 hitPell = gamePellets.Find(x=>x.pellNum == gd1.clientNum);
 
@@ -907,11 +1036,12 @@ namespace SwarchServer
 
                                }
                                 
-
+*/
                                 break;
                             }
                         case "score":
                             {
+                               /*
                                 int newScore = db.updateScore(gd1.userName, gd1.score);
                                 gd1.score = newScore;
                                 scoreUpdateInfo = string.Concat(scoreUpdateInfo,
@@ -919,6 +1049,7 @@ namespace SwarchServer
 
                                 clientsEntered[i].sw.WriteLine("score{0}", scoreUpdateInfo);
                                 scoreUpdateInfo = "";
+                               */
                                 break;
                             }
                         case"hitOpp":
@@ -1447,6 +1578,13 @@ private class BroadCast
                             gamedata.action = data[0];
                             gamedata.score = Convert.ToInt32(data[1]); //Score
                         }
+                        else if(data[0] == "quit")
+                        {
+                            gamedata.action = data[0];
+
+                        }
+
+                    /*
                         else if (data[0] == "wall")
                         {
                             gamedata.action = data[0];
@@ -1473,6 +1611,7 @@ private class BroadCast
                             gamedata.posY = Convert.ToDouble(data[4]);
 
                         }
+                    */
                         else
                         {
                             gamedata.action = "";

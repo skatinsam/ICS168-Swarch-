@@ -160,14 +160,14 @@ public class Player : MonoBehaviour
 		}
 		if(c.tag == "Pellet")
 		{
-			float pellX = c.transform.position.x;
-			float pellZ = c.transform.position.z;
-			Pellets tempPell = (Pellets)c.GetComponent("Pellets");
+			//float pellX = c.transform.position.x;
+			//float pellZ = c.transform.position.z;
+			//Pellets tempPell = (Pellets)c.GetComponent("Pellets");
 
 			 
-			gp.returnSocket().sendQueue.Enqueue("hitPell\\"+ tempPell.pellNumber +"\\"
-			                                    + tempPell.transform.localScale.x  
-			                                    +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
+			//gp.returnSocket().sendQueue.Enqueue("hitPell\\"+ tempPell.pellNumber +"\\"
+			 //                                   + tempPell.transform.localScale.x  
+			 //                                  +  "\\" +pellX +"\\"+ pellZ); //+ "\\"
 			                                    //+(((gp.dt.AddMinutes(gp.uniClock.Elapsed.Minutes).AddSeconds(gp.uniClock.Elapsed.Seconds).AddMilliseconds(gp.uniClock.Elapsed.Milliseconds)).Ticks)) ); 
 
   
