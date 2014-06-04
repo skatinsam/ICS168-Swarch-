@@ -186,6 +186,7 @@ public class LoginScript : MonoBehaviour
 			{
 				gameProcess.guiTGP= guiT;
 				 gameProcess.initOpponentData = splitData;
+                
 
 				Application.LoadLevel("swarch(Whale)");	
 

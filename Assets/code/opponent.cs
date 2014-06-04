@@ -21,10 +21,19 @@ public class opponent : MonoBehaviour
 	
 	public bool resetting = false;
 	public float move = 1.0f;
+
+    int opponentScore = 0;
 	
 	//public TextMesh scoreDisplay;
-	
-	
+    
+    void OnGUI()
+    {
+        if (opponentNum == 1)
+        {
+            GUI.Box(new Rect(Screen.width - 200, opponentNum * 100, 100, 100), "Player " + opponentNum + " High score: " + opponentScore);
+        }
+    }
+    
 	void Start()
 	{
 		

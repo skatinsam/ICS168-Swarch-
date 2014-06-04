@@ -1057,7 +1057,7 @@ namespace SwarchServer
                             {
                                 String sentHighScores = "highscore";
                                 DataTable high = db.grabScoreBoard();
-                                for (int t = 0; t < 5; i++)
+                                for (int t = 0; t < 3; i++)
                                 {
                                     String s = high.Rows[t]["name"].ToString();
                                     String l = high.Rows[t]["totalscore"].ToString();

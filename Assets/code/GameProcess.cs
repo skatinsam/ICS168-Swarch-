@@ -1,5 +1,13 @@
 ﻿//SWARCH
 
+/*
+ * Scoreboard status:
+ * Made GUI.Box in Player.cs and opponent.cs
+ * Placement of box dependent on client number
+ * 
+ * 
+ * 
+*/
 
 using UnityEngine;
 using System.Collections;
@@ -47,6 +55,7 @@ public class GameProcess : MonoBehaviour
 	public Player player;
 	public Vector3 initPlayerPos;
 	System.Object thisLock;
+    public opponent[] opps;
 
 	public Stopwatch uniClock; // = new Stopwatch();
 	public DateTime dt; // = new DateTime();
@@ -116,6 +125,8 @@ public class GameProcess : MonoBehaviour
 			socks.Disconnect();
 			print("\nDISCONNECTED ");
 		}
+    
+        
 
 	}
 
@@ -179,6 +190,7 @@ public class GameProcess : MonoBehaviour
 					opp.name = "opponent"+initOpponentData[k+2];
 					
 					opp.opponentNum = Convert.ToInt32(initOpponentData[k+2]);
+
 
 				}
 
