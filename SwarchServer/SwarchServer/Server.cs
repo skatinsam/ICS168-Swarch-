@@ -913,7 +913,7 @@ namespace SwarchServer
                                 
                                 break;
                             }
-                       /*
+                       
                         case "quit":
                             {
                                 for (int b = 0; b < clientsEntered.Count; ++b)
@@ -923,10 +923,10 @@ namespace SwarchServer
                                 }
                                 
                                 clientsEntered[i].TCPclient.Close();
-                                clientsEntered[i] = new Client();
+                                clientsEntered.RemoveAt(i);
                                 break;
                             }
-                        */
+                        
                         case "hitPell":
                             {
                                //playInfo tempPlayInfo = new playInfo();

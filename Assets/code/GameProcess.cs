@@ -119,8 +119,8 @@ public class GameProcess : MonoBehaviour
 	{
 		if ( GUI.Button( new Rect( 0, 50, 100, 20), "Disconnect"))
 		{
-			//returnSocket().sendQueue.Enqueue("quit");
-
+			//returnSocket().sendQueue.Enqueue("quit"); 
+             
 			socks.endThread();
 			socks.Disconnect();
 			print("\nDISCONNECTED ");
@@ -300,6 +300,10 @@ public class GameProcess : MonoBehaviour
 						tempClient.transform.localScale = new Vector3(Convert.ToInt32(splitData[2]),
 						                                          tempClient.transform.localScale.y,
 						                                          Convert.ToInt32(splitData[2]));
+
+                        tempClient.opponentSize = new Vector3(Convert.ToInt32(splitData[2]),
+                                                                  tempClient.transform.localScale.y,
+                                                                  Convert.ToInt32(splitData[2])); 
 						
 						tempClient.MoveSpeed = float.Parse( splitData[3]);
 						
@@ -436,28 +440,37 @@ public class GameProcess : MonoBehaviour
                                                      tempClient.transform.position.y,
                                                       float.Parse(splitData[r + 4]));
 
-
+                        //increase opponenet score on hit
+                       // if ((tempClient.transform.localScale.x > tempClient.opponentSize.x) ||
+                        //    (tempClient.transform.localScale.z > tempClient.opponentSize.z))
+                      //  {
+                            tempClient.score += 2;
+                      //  }
+                        
                     }
 
                 }
 
             }
-		 /*
+		 
 			else if(splitData[0] == "closed")
 			{
-
+/*
 			  if(Convert.ToInt32(splitData[1]) == player.playerNum)
 			  {
 			     socks.endThread();
 				 socks.Disconnect();
 				 Application.Quit();
 			  }
-			  else
+
+			  if(Convert.ToInt32(splitData[1]) == player.playerNum)
 			  {
 			    // clear the score here
-			  }
+                opponent tempClient = GameObject.Find("opponent" + splitData[1]).GetComponent<opponent>();
+
+                DestroyObject(tempClient);
+			  }*/
 			}
-		  */
 
 		}
 	 }

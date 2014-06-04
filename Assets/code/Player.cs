@@ -37,7 +37,7 @@ public class Player : MonoBehaviour
 
     void OnGUI()
     {
-        GUI.Box(new Rect(Screen.width - 200, playerNum * 100 , 100, 100), "Player " + playerNum + " High score: " + totalScore);
+        GUI.Box(new Rect(Screen.width - 200, playerNum * 100 - 100, 100, 100), "Player " + playerNum + "\nScore: " + score);
     }
 
 	void Start()

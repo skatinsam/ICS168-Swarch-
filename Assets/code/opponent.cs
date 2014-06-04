@@ -12,6 +12,7 @@ public class opponent : MonoBehaviour
 	public int growSize = 2;
 	public int score = 0;
 
+    public Vector3 opponentSize;
 	
 	private GameProcess gp;
 	
@@ -22,15 +23,14 @@ public class opponent : MonoBehaviour
 	public bool resetting = false;
 	public float move = 1.0f;
 
-    int opponentScore = 0;
 	
 	//public TextMesh scoreDisplay;
     
     void OnGUI()
     {
-        if (opponentNum == 1)
+        if (opponentNum != gp.player.playerNum)
         {
-            GUI.Box(new Rect(Screen.width - 200, opponentNum * 100, 100, 100), "Player " + opponentNum + " High score: " + opponentScore);
+            GUI.Box(new Rect(Screen.width - 200, opponentNum * 100 - 100, 100, 100), "Player " + opponentNum + "\nScore: " + score);
         }
     }
     
@@ -40,7 +40,7 @@ public class opponent : MonoBehaviour
 		gp = GameObject.Find("GameProcess").GetComponent<GameProcess>(); 
 		
 		//scoreDisplay.transform.position = this.transform.position;
-
+        opponentSize = new Vector3(2, 2, 2);
 		
 		MoveSpeed = 10f;
 		//opponentNum = 0;
