@@ -196,7 +196,7 @@ namespace SwarchServer
 
         public DataTable grabScoreBoard()
         {
-            String query = String.Format("SELECT name, totalscore, localhighscore FROM scores ORDER BY totalscore DESC LIMIT 5");
+            String query = String.Format("SELECT name, totalscore FROM scores ORDER BY totalscore DESC LIMIT 5");
             return runQuery(query);
         }
     }
