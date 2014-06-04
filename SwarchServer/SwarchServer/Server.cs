@@ -359,14 +359,17 @@ namespace SwarchServer
     {
         while (clientsEntered.Count != 0)
         {
-            gameData gd1;
+            
             
             for (int i = 0; i < clientsEntered.Count; ++i)
             {
                // Client tempClient = clientsEntered[i];
 
+
                 if (clientsEntered[i].clientQueue !=null && clientsEntered[i].clientQueue.Count!=0) //(tempClient.clientQueue != null && tempClient.clientQueue.Count != 0)
                 {
+                    gameData gd1 = new gameData();
+                    
                     lock (thisLock)
                     {
 
@@ -389,7 +392,7 @@ namespace SwarchServer
                               }
                               else
                               {
-                                  Console.WriteLine("\nCHEATING: TRYING TO JUMP TOO FAR");
+                                 // Console.WriteLine("\nCHEATING: TRYING TO JUMP TOO FAR");
                               }
 
                                  if ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= walls.rightWall || (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= walls.leftWall
@@ -759,7 +762,7 @@ namespace SwarchServer
                                          }
 
                                         */
-                                         Thread.Sleep(200);
+                                         Thread.Sleep(170);
                                          clientsEntered[i].clientQueue.Clear();
 
                                          /*
