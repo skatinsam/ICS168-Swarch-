@@ -339,7 +339,7 @@ public class GameProcess : MonoBehaviour
 						                                          tempClient.transform.localScale.y,
 						                                          Convert.ToInt32(splitData[r+1]));
 
-
+							tempClient.score += 2;
 					}
 
 					
@@ -419,7 +419,7 @@ public class GameProcess : MonoBehaviour
                                                   player.transform.position.y,
                                                   float.Parse(splitData[r + 4]));
 
-
+							player.score += 10;
 
                     }
                     else
@@ -444,7 +444,7 @@ public class GameProcess : MonoBehaviour
                        // if ((tempClient.transform.localScale.x > tempClient.opponentSize.x) ||
                         //    (tempClient.transform.localScale.z > tempClient.opponentSize.z))
                       //  {
-                            tempClient.score += 2;
+
                       //  }
                         
                     }
