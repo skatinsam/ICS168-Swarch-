@@ -12,6 +12,7 @@ public class Player : MonoBehaviour
 	public int growSize = 2;
 	public int score = 0;
     public int totalScore = 0;
+    public int scoreSent = 0;
 	
 	// whether this paddle can accept player input
 	public bool AcceptsInput = true;
@@ -116,8 +117,12 @@ public class Player : MonoBehaviour
 													//+ this.playerNum 
 			//gp.returnSocket().sendQueue.Enqueue("wall\\"); 
 
-			gp.returnSocket().sendQueue.Enqueue("score\\" + score);
+            scoreSent = score - scoreSent;
+
+			gp.returnSocket().sendQueue.Enqueue("score\\" + scoreSent);
 			//pos =  Vector3.zero; // notify the server ??
+
+            scoreSent = score;
 
 			switch(this.playerNum)//(tempClient.clientNumber)
 			{

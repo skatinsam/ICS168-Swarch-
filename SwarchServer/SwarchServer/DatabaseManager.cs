@@ -186,7 +186,7 @@ namespace SwarchServer
 
             update("scores", user, newScore.ToString());
 
-            if (score > si)
+            if (score > la)
             {
                 update("scores2", user, score.ToString());
             }

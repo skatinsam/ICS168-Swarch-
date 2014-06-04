@@ -35,8 +35,8 @@ public class GameProcess : MonoBehaviour
 	//public ArrayList 
 	public List<Pellets> pellets;
 	public List<float> pelletsLocation;
-    public List<String> highestScorers;
-    public List<int> highestScores;
+    public String[] highestScorers;
+    public int[] highestScores;
 	public int numOfPlayer;
 	public DateTime t1; 
 	public DateTime t4;
@@ -69,7 +69,10 @@ public class GameProcess : MonoBehaviour
 		pelletsLocation = new List<float>();
 		data = "";
 		loadPellets = false;
-		 
+
+        highestScorers = new String[5];
+        highestScores = new int[5];
+
 		mainPlayerNumber= 0;
 
 		startedGame = false;
@@ -363,13 +366,13 @@ public class GameProcess : MonoBehaviour
 			}
             else if (splitData[0] == "highscore")
             {
-                highestScorers.Clear();
-                highestScores.Clear();
+                int j = 0;
                 //add scores to this thing
                 for (int i = 1; i < 11; i += 2)
                 {
-                    highestScorers.Add(splitData[i]);
-                    highestScores.Add(Int32.Parse(splitData[i + 1]));
+                    highestScorers[j] = splitData[i];
+                    highestScores[j] = Int32.Parse(splitData[i + 1]);
+                    j++;
                 }
             }
             else if (splitData[0] == "pH")
