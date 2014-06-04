@@ -10,7 +10,7 @@ using System.Threading;
 using System.IO;
 using System.Diagnostics;
 using System.Collections;
-
+using System.Data;
 
 namespace SwarchServer
 {
@@ -359,14 +359,17 @@ namespace SwarchServer
     {
         while (clientsEntered.Count != 0)
         {
-            gameData gd1;
+            
             
             for (int i = 0; i < clientsEntered.Count; ++i)
             {
                // Client tempClient = clientsEntered[i];
 
+
                 if (clientsEntered[i].clientQueue !=null && clientsEntered[i].clientQueue.Count!=0) //(tempClient.clientQueue != null && tempClient.clientQueue.Count != 0)
                 {
+                    gameData gd1 = new gameData();
+                    
                     lock (thisLock)
                     {
 
@@ -389,7 +392,7 @@ namespace SwarchServer
                               }
                               else
                               {
-                                  Console.WriteLine("\nCHEATING: TRYING TO JUMP TOO FAR");
+                                 // Console.WriteLine("\nCHEATING: TRYING TO JUMP TOO FAR");
                               }
 
                                  if ((clientsEntered[i].posX + (clientsEntered[i].playerSize * .55)) >= walls.rightWall || (clientsEntered[i].posX - (clientsEntered[i].playerSize * .55)) <= walls.leftWall
@@ -759,7 +762,7 @@ namespace SwarchServer
                                          }
 
                                         */
-                                         Thread.Sleep(200);
+                                         Thread.Sleep(170);
                                          clientsEntered[i].clientQueue.Clear();
 
                                          /*
@@ -1041,15 +1044,28 @@ namespace SwarchServer
                             }
                         case "score":
                             {
-                               /*
                                 int newScore = db.updateScore(gd1.userName, gd1.score);
                                 gd1.score = newScore;
                                 scoreUpdateInfo = string.Concat(scoreUpdateInfo,
                                         string.Format("\\{0}", gd1.score));
 
                                 clientsEntered[i].sw.WriteLine("score{0}", scoreUpdateInfo);
-                                scoreUpdateInfo = "";
-                               */
+                                scoreUpdateInfo = "";                              
+                                break;
+                            }
+                        case "highscore":
+                            {
+                                String sentHighScores = "highscore";
+                                DataTable high = db.grabScoreBoard();
+                                for (int t = 0; t < 5; i++)
+                                {
+                                    String s = high.Rows[t]["name"].ToString();
+                                    String l = high.Rows[t]["totalscore"].ToString();
+
+                                    sentHighScores = string.Concat(sentHighScores,
+                                        string.Format("\\{0}\\{1}", s, t));
+                                }
+                                clientsEntered[i].sw.WriteLine(sentHighScores);
                                 break;
                             }
                         case"hitOpp":
@@ -1583,6 +1599,10 @@ private class BroadCast
                             gamedata.action = data[0];
 
                         }
+                        else if (data[0] == "highscore")
+                        {
+                            gamedata.action = data[0];
+                        }
 
                     /*
                         else if (data[0] == "wall")
@@ -1615,7 +1635,7 @@ private class BroadCast
                         else
                         {
                             gamedata.action = "";
-                            
+
                         }
 
                        // if (gamedata.action == "hitOpp")

@@ -193,5 +193,11 @@ namespace SwarchServer
 
             return newScore;
         }
+
+        public DataTable grabScoreBoard()
+        {
+            String query = String.Format("SELECT name, totalscore FROM scores ORDER BY totalscore DESC LIMIT 5");
+            return runQuery(query);
+        }
     }
 }

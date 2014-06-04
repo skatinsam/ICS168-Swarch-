@@ -88,9 +88,9 @@ public class LoginScript : MonoBehaviour
                 }
                 else
                 {
-                    if (password.Length < 7)
+                    if (passwordCheck(password))
                     {
-                        guiT.text = "Password must be 8 or more characters ";
+                        guiT.text = "Password must be 8 or more characters and must have upper and lower cases";
                         Debug.Log("Please try again");
                     }
                     else
@@ -210,4 +210,28 @@ public class LoginScript : MonoBehaviour
         return s.ToString();
     }
 
+    private bool passwordCheck(String pass)
+    {
+        bool lower = false;
+        bool upper = false;
+
+        foreach (char pc in pass)
+        {
+            if (Char.IsUpper(pc) && upper == false)
+            {
+                upper = true;
+            }
+            if (Char.IsLower(pc) && lower == false)
+            {
+                lower = true;
+            }
+        }
+
+        if (pass.Length > 7 && upper && lower)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
